@@ -135,23 +135,6 @@ public class ECKey {
     }
 
     /**
-     * Creates an ECKey with the supplied public/private key pair and key creation time.
-     * Both keys must be provided.
-     *
-     * @param       pubKey              Public key
-     * @param       privKey             Private key
-     * @param       creationTime        Original creation time for the public/private key pair
-     * @param       label               Key label
-     */
-    public ECKey(byte[] pubKey, BigInteger privKey, long creationTime, String label) {
-        this.pubKey = pubKey;
-        this.privKey = privKey;
-        this.creationTime = creationTime;
-        this.label = label;
-        isCompressed = pubKey.length==33 ? true : false;
-    }
-
-    /**
      * Returns the key creation time
      *
      * @return      Key creation time (seconds)

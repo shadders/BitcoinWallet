@@ -152,10 +152,38 @@ public class Main {
                 }
             }
             //
+            // Start our services on the GUI thread so we can display dialogs
+            //
+            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+            javax.swing.SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    startup();
+                }
+            });
+        } catch (Exception exc) {
+            log.error("Exception during program initialization", exc);
+        }
+    }
+
+    /**
+     * Start our services
+     */
+    private static void startup() {
+        try {
+            //
+            // Get the wallet passphrase if it is not specified in the application properties
+            //
+            Parameters.passPhrase = properties.getProperty("passphrase");
+            if (Parameters.passPhrase == null || Parameters.passPhrase.length() == 0) {
+                Parameters.passPhrase = JOptionPane.showInputDialog("Enter the wallet passphrase");
+                if (Parameters.passPhrase == null || Parameters.passPhrase.length() == 0)
+                    System.exit(0);
+            }
+            //
             // Create the wallet.  We will use the 'jwallet' database for the production network
             // and the 'jtestwlt' database for the test network.
             //
-            Parameters.wallet = new Wallet(testNetwork?"jtestwlt":"jwallet");
+            Parameters.wallet = new WalletPg(testNetwork?"jtestwlt":"jwallet");
             //
             // Get the address and key lists
             //
@@ -214,14 +242,12 @@ public class Main {
             //
             // Start the GUI
             //
-            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-            javax.swing.SwingUtilities.invokeLater(new Runnable() {
-                public void run() {
-                    createAndShowGUI();
-                }
-            });
+            createAndShowGUI();
+        } catch (KeyException exc) {
+            JOptionPane.showMessageDialog(null, "The wallet passphrase is not correct",
+                                          "Error", JOptionPane.ERROR_MESSAGE);
         } catch (Exception exc) {
-            log.error("Exception during program initialization", exc);
+            logException("Exception while starting wallet services", exc);
         }
     }
 
@@ -232,24 +258,20 @@ public class Main {
      * problems with other window events
      */
     private static void createAndShowGUI() {
-        try {
-            //
-            // Use the normal window decorations as defined by the look-and-feel
-            // schema
-            //
-            JFrame.setDefaultLookAndFeelDecorated(true);
-            //
-            // Create the main application window
-            //
-            mainWindow = new MainWindow();
-            //
-            // Show the application window
-            //
-            mainWindow.pack();
-            mainWindow.setVisible(true);
-        } catch (Exception exc) {
-            Main.logException("Exception while initializing application window", exc);
-        }
+        //
+        // Use the normal window decorations as defined by the look-and-feel
+        // schema
+        //
+        JFrame.setDefaultLookAndFeelDecorated(true);
+        //
+        // Create the main application window
+        //
+        mainWindow = new MainWindow();
+        //
+        // Show the application window
+        //
+        mainWindow.pack();
+        mainWindow.setVisible(true);
     }
 
     /**

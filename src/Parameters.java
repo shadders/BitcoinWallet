@@ -179,4 +179,7 @@ public class Parameters {
 
     /** Network chain height */
     public static int networkChainHeight;
+
+    /** Wallet passphrase */
+    public static String passPhrase;
 }
