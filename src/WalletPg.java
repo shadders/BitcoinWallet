@@ -571,7 +571,7 @@ public class WalletPg extends Wallet {
     /**
      * Stores a block header
      *
-     * @param       blockHeader         Block header
+     * @param       header              Block header
      * @throws      WalletException     Unable to store the block header
      */
     @Override
@@ -606,7 +606,7 @@ public class WalletPg extends Wallet {
     /**
      * Updates the matched transactions for a block
      *
-     * @param       blockHeader         Block Header
+     * @param       header              Block Header
      * @throws      WalletException     Unable to update the database
      */
     @Override

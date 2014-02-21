@@ -55,7 +55,7 @@ public class TransactionOutput {
      * Creates a transaction output for the specified amount using a
      * PAY_TO_PUBKEY_HASH script
      *
-     * @param       index                   Transaction output index
+     * @param       txIndex                 Transaction output index
      * @param       value                   Transaction output value
      * @param       address                 Send address
      */

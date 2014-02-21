@@ -7,4 +7,20 @@ I'm using PostgreSQL (9.3 or later) for the database simply because it is alread
 
 BouncyCastle (1.50 or later) is used for the elliptic curve functions and Simple Logging Facade (1.7.5 or later) is used for console and file logging.
 
-There are no special build instructions.  I use the Netbeans IDE but any build environment with the Java compiler available should work.  The documentation is generated from the source code using javadoc.
+Build
+=====
+
+I use the Netbeans IDE but any build environment with the Java compiler available should work.  The documentation is generated from the source code using javadoc.
+
+Here are the steps for a manual build:
+
+  - Create 'doc', 'lib' and 'classes' directories under the BitcoinWallet directory (the directory containing 'src')
+  - Download Java SE Development Kit 7: http://www.oracle.com/technetwork/java/javase/downloads/index.html
+  - Download BouncyCastle 1.50 or later to 'lib': https://www.bouncycastle.org/
+  - Download Simple Logging Facade 1.7.5 or later to 'lib': http://www.slf4j.org/
+  - Download PostgreSQL 9.3 or later to 'lib': http://www.postgresql.org/
+  - Change to the BitcoinWallet directory (with subdirectories 'doc', 'lib', 'classes' and 'src')
+  - The manifest.mf, build-list and doc-list files specify the classpath for the dependent jar files.  Update the list as required to match what you downloaded.
+  - Build the classes: javac @build-list
+  - Build the jar: jar cmf manifest.mf BitcoinWallet.jar -C classes BitcoinWallet
+  - Build the documentation: javadoc @doc-list

@@ -66,7 +66,7 @@ public class RejectMessage {
      * @param       peer            Destination peer
      * @param       cmd             Failing command
      * @param       reason          Reason code
-     * @param       desc            Descriptive text
+     * @param       description     Descriptive text
      * @return                      Message to be sent to the peer
      */
     public static Message buildRejectMessage(Peer peer, String cmd, int reason, String description) {

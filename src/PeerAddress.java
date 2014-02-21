@@ -179,7 +179,7 @@ public class PeerAddress {
     /**
      * Set the address type
      *
-     * @param       TRUE if this is a static address
+     * @param       isStatic        TRUE if this is a static address
      */
     public void setStatic(boolean isStatic) {
         staticAddress = isStatic;

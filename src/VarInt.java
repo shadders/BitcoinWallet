@@ -90,7 +90,6 @@ public final class VarInt {
      * Creates a new VarInt from an input stream encoded in little-endian format
      *
      * @param       in              Input stream
-     * @param       offset          Starting offset into the array
      * @throws      EOFException
      * @throws      IOException
      */

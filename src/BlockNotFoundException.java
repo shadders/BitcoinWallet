@@ -43,7 +43,7 @@ public class BlockNotFoundException extends WalletException {
      * Creates a new exception with a detail message and cause
      *
      * @param       message         Detail message
-     * @param       e               Caught exception
+     * @param       t               Caught exception
      */
     public BlockNotFoundException(String message, Exception t) {
         super(message, t);

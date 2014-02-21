@@ -90,7 +90,7 @@ public class BloomFilter {
         // Allocate the filter array
         //
         int size = Math.min((int)(-1/(Math.pow(Math.log(2), 2)) * elements*Math.log(falsePositiveRate)),
-                            (int)MAX_FILTER_SIZE*8)/8;
+                            MAX_FILTER_SIZE*8)/8;
         filter = new byte[size<=0 ? 1 : size];
         //
         // Optimal number of hash functions for a given filter size and element count.

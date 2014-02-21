@@ -41,7 +41,7 @@ public class SignedInput {
      *
      * @param       key                 Key to sign the transaction
      * @param       outPoint            Connected transaction output
-     * @oaram       value               Transaction output value
+     * @param       value               Transaction output value
      * @param       scriptBytes         Transaction output script bytes
      */
     public SignedInput(ECKey key, OutPoint outPoint, BigInteger value, byte[] scriptBytes) {

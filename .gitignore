@@ -1,3 +1,9 @@
+# Build Directories #
+classes/
+doc/
+lib/
+
+# Build Files #
 *.class
 
 # Package Files #

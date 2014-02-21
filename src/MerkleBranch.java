@@ -223,8 +223,8 @@ public class MerkleBranch {
      * hashes and the calculated Merkle root hash.  The matchedHash list will be cleared
      * before starting.
      *
-     * @param       matchesHashes       Return the hashes of the matched leaf transactions
-     * @throws      VerificationException
+     * @param       matchedHashes           Return the hashes of the matched leaf transactions
+     * @throws      VerificationException   Malformed Merkle branch
      */
     public Sha256Hash calculateMerkleRoot(List<Sha256Hash> matchedHashes) throws VerificationException {
         matchedHashes.clear();

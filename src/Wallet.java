@@ -215,7 +215,7 @@ public abstract class Wallet {
     /**
      * Stores a block header
      *
-     * @param       blockHeader         Block header
+     * @param       header              Block header
      * @throws      WalletException     Unable to store the block header
      */
     public abstract void storeHeader(BlockHeader header) throws WalletException;
@@ -223,7 +223,7 @@ public abstract class Wallet {
     /**
      * Updates the matched transactions for a block
      *
-     * @param       blockHeader         Block Header
+     * @param       header              Block Header
      * @throws      WalletException     Unable to update the database
      */
     public abstract void updateMatches(BlockHeader header) throws WalletException;

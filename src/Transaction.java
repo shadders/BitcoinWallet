@@ -412,8 +412,8 @@ public class Transaction {
      * @param       sigHashType             Signature hash type
      * @param       subScriptBytes          Replacement script for the current input
      * @param       outStream               The output stream
-     * @throw       IOException             Unable to serialize data
-     * @throw       VerificationException   Invalid input index or signature hash type
+     * @throws      IOException             Unable to serialize data
+     * @throws      VerificationException   Invalid input index or signature hash type
      */
     public final void serializeForSignature(int index, int sigHashType, byte[] subScriptBytes,
                                 OutputStream outStream) throws IOException, VerificationException {

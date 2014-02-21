@@ -364,7 +364,7 @@ public class Main {
     /**
      * Convert a decimal string to a Satoshi BigInteger (1 Satoshi = 0.00000001 BTC)
      *
-     * @param       string          String to be converted
+     * @param       value           String to be converted
      * @return                      BigInteger representation
      */
     public static BigInteger stringToSatoshi(String value) throws NumberFormatException {
