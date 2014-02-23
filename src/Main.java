@@ -21,13 +21,17 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+
 import java.math.BigDecimal;
 import java.math.BigInteger;
+
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
+import java.util.logging.LogManager;
 
 import javax.swing.*;
 
@@ -54,19 +58,22 @@ import javax.swing.*;
  *
  * <p>The following command-line options can be specified:</p>
  * <table>
- * <col width=20%/>
- * <col width=80%/>
+ * <col width=30%/>
+ * <col width=70%/>
  * <tr><td>-Dbitcoin.datadir=directory-path</td>
  * <td>Specifies the application data directory.  Application data will be stored in
  * ~/AppData/Roaming/BitcoinWallet if no path is specified.</td></tr>
+ *
  * <tr><td>-Djava.util.logging.config.file=file-path</td>
- * <td>Specifies the logger configuration file.  The default Java runtime configuration file will be used
- * if this option is not specified.
+ * <td>Specifies the logger configuration file.  The logger properties will be read from 'logging.properties'
+ * in the application data directory.  If this file is not found, the 'java.util.logging.config.file' system
+ * property will be used to locate the logger configuration file.  If this property is not defined,
+ * the logger properties will be obtained from jre/lib/logging.properties.
  *      <ul>
- *      <li>JDK FINE corresponds to our DEBUG level</li>
- *      <li>JDK INFO corresponds to our INFO level</li>
- *      <li>JDK WARNING corresponds to our WARN level</li>
- *      <li>JDK SEVERE corresponds to our ERROR level</li>
+ *      <li>JDK FINE corresponds to the SLF4J DEBUG level</li>
+ *      <li>JDK INFO corresponds to the SLF4J INFO level</li>
+ *      <li>JDK WARNING corresponds to the SLF4J WARN level</li>
+ *      <li>JDK SEVERE corresponds to the SLF4J ERROR level</li>
  *      </ul>
  *  </td></tr>
  * </table>
@@ -115,16 +122,11 @@ public class Main {
     public static void main(String[] args) {
         try {
             //
-            // Use the brief logging format
-            //
-            BriefLogFormatter.init();
-            //
             // Process command-line options
             //
             dataPath = System.getProperty("bitcoin.datadir");
             if (dataPath == null)
                 dataPath = System.getProperty("user.home")+"\\AppData\\Roaming\\BitcoinWallet";
-            log.info(String.format("Application data path: '%s'", dataPath));
             //
             // Process command-line arguments
             //
@@ -142,6 +144,19 @@ public class Main {
             File dirFile = new File(dataPath);
             if (!dirFile.exists())
                 dirFile.mkdirs();
+            //
+            // Initialize the logging properties from 'logging.properties'
+            //
+            File logFile = new File(dataPath+"\\logging.properties");
+            if (logFile.exists()) {
+                FileInputStream inStream = new FileInputStream(logFile);
+                LogManager.getLogManager().readConfiguration(inStream);
+            }
+            //
+            // Use the brief logging format
+            //
+            BriefLogFormatter.init();
+            log.info(String.format("Application data path: '%s'", dataPath));
             //
             // Load the saved application properties
             //
@@ -161,7 +176,7 @@ public class Main {
                 }
             });
         } catch (Exception exc) {
-            log.error("Exception during program initialization", exc);
+            logException("Exception during program initialization", exc);
         }
     }
 
