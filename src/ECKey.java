@@ -16,19 +16,23 @@
  */
 package BitcoinWallet;
 
-import org.bouncycastle.asn1.sec.SECNamedCurves;
 import org.bouncycastle.asn1.x9.X9ECParameters;
+
 import org.bouncycastle.crypto.AsymmetricCipherKeyPair;
+import org.bouncycastle.crypto.ec.CustomNamedCurves;
 import org.bouncycastle.crypto.generators.ECKeyPairGenerator;
 import org.bouncycastle.crypto.params.ECDomainParameters;
 import org.bouncycastle.crypto.params.ECKeyGenerationParameters;
 import org.bouncycastle.crypto.params.ECPrivateKeyParameters;
 import org.bouncycastle.crypto.params.ECPublicKeyParameters;
 import org.bouncycastle.crypto.signers.ECDSASigner;
+
+import org.bouncycastle.math.ec.custom.sec.SecP256K1Curve;
+
 import org.bouncycastle.math.ec.ECAlgorithms;
-import org.bouncycastle.math.ec.ECCurve;
 import org.bouncycastle.math.ec.ECFieldElement;
 import org.bouncycastle.math.ec.ECPoint;
+
 import org.bouncycastle.util.encoders.Base64;
 
 import java.io.ByteArrayOutputStream;
@@ -51,7 +55,7 @@ public class ECKey {
     /** Elliptic curve parameters (secp256k1 curve) */
     private static final ECDomainParameters ecParams;
     static {
-        X9ECParameters params = SECNamedCurves.getByName("secp256k1");
+        X9ECParameters params = CustomNamedCurves.getByName("secp256k1");
         ecParams = new ECDomainParameters(params.getCurve(), params.getG(), params.getN(), params.getH());
         HALF_CURVE_ORDER = params.getN().shiftRight(1);
     }
@@ -432,11 +436,11 @@ public class ECKey {
         }
         int recID = headerByte - 27;
         ECKey key;
-        try {
-            byte[] contents;
+        byte[] contents;
             //
             // Format the message for signing
             //
+        try {
             try (ByteArrayOutputStream outStream = new ByteArrayOutputStream(message.length()*2)) {
                 byte[] headerBytes = BITCOIN_SIGNED_MESSAGE_HEADER.getBytes("UTF-8");
                 outStream.write(VarInt.encode(headerBytes.length));
@@ -455,6 +459,8 @@ public class ECKey {
                 throw new SignatureException("Unable to recover public key from signature");
         } catch (IOException exc) {
             throw new IllegalStateException("Unexpected IOException", exc);
+        } catch (IllegalArgumentException exc) {
+            throw new SignatureException("Signature is not valid");
         }
         //
         // The signature is correct if the recovered public key hash matches the supplied hash
@@ -495,7 +501,7 @@ public class ECKey {
         //
         // More concisely, what these points mean is to use X as a compressed public key.
         //
-        ECCurve.Fp curve = (ECCurve.Fp)ecParams.getCurve();
+        SecP256K1Curve curve = (SecP256K1Curve)ecParams.getCurve();
         BigInteger prime = curve.getQ();
         if (x.compareTo(prime) >= 0) {
             return null;
@@ -524,7 +530,7 @@ public class ECKey {
         BigInteger rInv = sig.getR().modInverse(n);
         BigInteger srInv = rInv.multiply(sig.getS()).mod(n);
         BigInteger eInvrInv = rInv.multiply(eInv).mod(n);
-        ECPoint.Fp q = (ECPoint.Fp)ECAlgorithms.sumOfTwoMultiplies(ecParams.getG(), eInvrInv, R, srInv);
+        ECPoint q = ECAlgorithms.sumOfTwoMultiplies(ecParams.getG(), eInvrInv, R, srInv);
         return new ECKey(q.getEncoded(compressed));
     }
 
@@ -536,7 +542,7 @@ public class ECKey {
      * @return                          Uncompressed public key
      */
     private static ECPoint decompressKey(BigInteger xBN, boolean yBit) {
-        ECCurve.Fp curve = (ECCurve.Fp)ecParams.getCurve();
+        SecP256K1Curve curve = (SecP256K1Curve)ecParams.getCurve();
         ECFieldElement x = curve.fromBigInteger(xBN);
         ECFieldElement alpha = x.multiply(x.square().add(curve.getA())).add(curve.getB());
         ECFieldElement beta = alpha.sqrt();
