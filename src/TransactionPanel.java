@@ -16,6 +16,7 @@
 package BitcoinWallet;
 
 import java.math.BigInteger;
+
 import java.util.Arrays;
 import java.util.Date;
 import java.util.LinkedList;
@@ -25,6 +26,10 @@ import javax.swing.*;
 import javax.swing.table.*;
 import java.awt.*;
 import java.awt.event.*;
+
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.StringSelection;
+import java.awt.Toolkit;
 
 /**
  * TransactionPanel displays a table containing all of the wallet transactions
@@ -123,7 +128,14 @@ public class TransactionPanel extends JPanel implements ActionListener {
         JPanel buttonPane = new JPanel();
         buttonPane.setBackground(Color.white);
 
-        JButton button = new JButton("Move to Safe");
+        JButton button = new JButton("Copy TxID");
+        button.setActionCommand("copy txid");
+        button.addActionListener(this);
+        buttonPane.add(button);
+
+        buttonPane.add(Box.createHorizontalStrut(15));
+
+        button = new JButton("Move to Safe");
         button.setActionCommand("move to safe");
         button.addActionListener(this);
         buttonPane.add(button);
@@ -156,8 +168,8 @@ public class TransactionPanel extends JPanel implements ActionListener {
      */
     @Override
     public void actionPerformed(ActionEvent ae) {
-
         //
+        // "copy txid"      - Copy transaction ID to clipboard
         // "move to safe"   - Move transaction to the safe
         // "move to wallet" - Move transaction to the wallet
         // "delete tx"      - Delete transaction
@@ -170,6 +182,12 @@ public class TransactionPanel extends JPanel implements ActionListener {
                 row = table.convertRowIndexToModel(row);
                 String action = ae.getActionCommand();
                 switch (action) {
+                    case "copy txid":
+                        String address = (String)tableModel.getValueAt(row, 1);
+                        StringSelection sel = new StringSelection(address);
+                        Clipboard cb = Toolkit.getDefaultToolkit().getSystemClipboard();
+                        cb.setContents(sel, null);
+                        break;
                     case "move to safe":
                         if (moveToSafe(row)) {
                             tableModel.fireTableRowsUpdated(row, row);
