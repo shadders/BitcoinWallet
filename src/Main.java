@@ -48,11 +48,14 @@ import javax.swing.*;
  *
  * <p>The following command-line arguments are supported:</p>
  * <ul>
- * <li>Specify PROD to use the production Bitcoin network or TEST to use the test network.  Files for the production
- * network are stored in ~\AppData\Roaming\BitcoinWallet while files for the test network are stored in
- * ~\AppData\Roaming\BitcoinWallet\TestNet.</li>
+ * <li>Specify PROD to use the production Bitcoin network or TEST to use the regression test network.
+ * Files for the production network are stored in ~\AppData\Roaming\BitcoinWallet while files for the
+ * test network are stored in ~\AppData\Roaming\BitcoinWallet\TestNet.</li>
+ *
  * <li>Specify the IP address and port of the first peer node that we will use (address:port).  If omitted, we will
- * use DNS discovery to locate peer nodes.</li>
+ * use DNS discovery to locate peer nodes.  You must specify a peer node for the test network since
+ * DNS discovery is not supported on that network.</li>
+ *
  * <li>Additional peer nodes can be specified by adding additional address:port values</li>
  * </ul>
  *
@@ -133,11 +136,25 @@ public class Main {
             if (args.length != 0)
                 processArguments(args);
             //
-            // Initialize the application variables
+            // Initialize the network parameters
             //
-            if (testNetwork)
+            if (testNetwork) {
                 dataPath = dataPath+"\\TestNet";
-            propFile = new File(dataPath+"\\BitcoinWallet.properties");
+                Parameters.MAGIC_NUMBER = Parameters.MAGIC_NUMBER_TESTNET;
+                Parameters.ADDRESS_VERSION = Parameters.ADDRESS_VERSION_TESTNET;
+                Parameters.DUMPED_PRIVATE_KEY_VERSION = Parameters.DUMPED_PRIVATE_KEY_VERSION_TESTNET;
+                Parameters.GENESIS_BLOCK_HASH = Parameters.GENESIS_BLOCK_TESTNET;
+                Parameters.GENESIS_BLOCK_TIME = Parameters.GENESIS_TIME_TESTNET;
+                Parameters.MAX_TARGET_DIFFICULTY = Parameters.MAX_DIFFICULTY_TESTNET;
+            } else {
+                Parameters.MAGIC_NUMBER = Parameters.MAGIC_NUMBER_PRODNET;
+                Parameters.ADDRESS_VERSION = Parameters.ADDRESS_VERSION_PRODNET;
+                Parameters.DUMPED_PRIVATE_KEY_VERSION = Parameters.DUMPED_PRIVATE_KEY_VERSION_PRODNET;
+                Parameters.GENESIS_BLOCK_HASH = Parameters.GENESIS_BLOCK_PRODNET;
+                Parameters.GENESIS_BLOCK_TIME = Parameters.GENESIS_TIME_PRODNET;
+                Parameters.MAX_TARGET_DIFFICULTY = Parameters.MAX_DIFFICULTY_PRODNET;
+            }
+            Parameters.PROOF_OF_WORK_LIMIT = Utils.decodeCompactBits(Parameters.MAX_TARGET_DIFFICULTY);
             //
             // Create the data directory if it doesn't exist
             //
@@ -160,6 +177,7 @@ public class Main {
             //
             // Load the saved application properties
             //
+            propFile = new File(dataPath+"\\BitcoinWallet.properties");
             properties = new Properties();
             if (propFile.exists()) {
                 try (FileInputStream in = new FileInputStream(propFile)) {
@@ -374,6 +392,8 @@ public class Main {
                 peerAddresses[i] = new PeerAddress(address, Integer.parseInt(peerParts[1]));
             }
         }
+        if (testNetwork && peerAddresses == null)
+            throw new IllegalArgumentException("You must specify a peer for the test network");
     }
 
     /**

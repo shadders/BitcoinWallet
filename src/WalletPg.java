@@ -1461,11 +1461,11 @@ public class WalletPg extends Wallet {
             chainWork = BigInteger.valueOf(1);
             try (PreparedStatement s = conn.prepareStatement(
                             "INSERT INTO Headers (blockHash,prevHash,blockTime,targetDifficulty,merkleRoot,"+
-                                        "matches, onChain,blockHeight,chainWork)"+
+                                        "matches,onChain,blockHeight,chainWork)"+
                                         "VALUES(?,?,?,?,?,?,true,0,'\\x01')")) {
                 s.setBytes(1, chainHead.getBytes());
                 s.setBytes(2, Sha256Hash.ZERO_HASH.getBytes());
-                s.setLong(3, 0x495fab29L);
+                s.setLong(3, Parameters.GENESIS_BLOCK_TIME);
                 s.setLong(4, Parameters.MAX_TARGET_DIFFICULTY);
                 s.setBytes(5, Sha256Hash.ZERO_HASH.getBytes());
                 s.setNull(6, Types.BINARY);
