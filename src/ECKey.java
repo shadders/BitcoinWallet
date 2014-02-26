@@ -19,6 +19,7 @@ package BitcoinWallet;
 import org.bouncycastle.asn1.x9.X9ECParameters;
 
 import org.bouncycastle.crypto.AsymmetricCipherKeyPair;
+import org.bouncycastle.crypto.digests.SHA256Digest;
 import org.bouncycastle.crypto.ec.CustomNamedCurves;
 import org.bouncycastle.crypto.generators.ECKeyPairGenerator;
 import org.bouncycastle.crypto.params.ECDomainParameters;
@@ -26,6 +27,7 @@ import org.bouncycastle.crypto.params.ECKeyGenerationParameters;
 import org.bouncycastle.crypto.params.ECPrivateKeyParameters;
 import org.bouncycastle.crypto.params.ECPublicKeyParameters;
 import org.bouncycastle.crypto.signers.ECDSASigner;
+import org.bouncycastle.crypto.signers.HMacDSAKCalculator;
 
 import org.bouncycastle.math.ec.custom.sec.SecP256K1Curve;
 
@@ -280,7 +282,7 @@ public class ECKey {
         //
         BigInteger[] sigs;
         try {
-            ECDSASigner signer = new ECDSASigner();
+            ECDSASigner signer = new ECDSASigner(new HMacDSAKCalculator(new SHA256Digest()));
             ECPrivateKeyParameters privKeyParams = new ECPrivateKeyParameters(privKey, ecParams);
             signer.init(true, privKeyParams);
             sigs = signer.generateSignature(contentsHash);

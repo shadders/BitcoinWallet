@@ -1,4 +1,4 @@
--classpath lib/bcprov-jdk15on-151.jar;lib/postgresql-9.3-1100.jdbc4.jar;lib/slf4j-api-1.7.5.jar;lib/slf4j-jdk14-1.7.5.jar
+-classpath lib/bcprov-jdk15on-151.jar;lib/slf4j-api-1.7.5.jar;lib/slf4j-jdk14-1.7.5.jar
 -d doc
 -windowtitle BitcoinWallet
 src/Address.java
