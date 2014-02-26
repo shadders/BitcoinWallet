@@ -114,7 +114,7 @@ public class Main {
     private static ThreadGroup threadGroup;
 
     /** Worker threads */
-    private static List<Thread> threads = new ArrayList<>(5);
+    private static final List<Thread> threads = new ArrayList<>(5);
 
     /** Deferred exception text */
     private static String deferredText;
@@ -122,6 +122,11 @@ public class Main {
     /** Deferred exception */
     private static Throwable deferredException;
 
+    /**
+     * Handles program initialization
+     *
+     * @param   args                Command-line arguments
+     */
     public static void main(String[] args) {
         try {
             //
@@ -189,6 +194,7 @@ public class Main {
             //
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
             javax.swing.SwingUtilities.invokeLater(new Runnable() {
+                @Override
                 public void run() {
                     startup();
                 }
@@ -486,6 +492,7 @@ public class Main {
             deferredException = exc;
             try {
                 javax.swing.SwingUtilities.invokeAndWait(new Runnable() {
+                    @Override
                     public void run() {
                         Main.logException(deferredText, deferredException);
                         deferredException = null;

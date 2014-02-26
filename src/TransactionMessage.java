@@ -18,10 +18,7 @@ package BitcoinWallet;
 import java.io.ByteArrayInputStream;
 import java.io.EOFException;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
 
 /**
  * <p>The 'tx' message contains a transaction which is not yet in a block.  The transaction

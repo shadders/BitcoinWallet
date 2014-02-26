@@ -35,7 +35,7 @@ import java.awt.event.*;
 public class SendDialog extends JDialog implements ActionListener {
 
     /** Address field */
-    private JComboBox addressField;
+    private JComboBox<Object> addressField;
 
     /** Amount field */
     private JTextField amountField;
@@ -64,13 +64,13 @@ public class SendDialog extends JDialog implements ActionListener {
         // Create the address field
         //
         if (Parameters.addresses.isEmpty()) {
-            addressField = new JComboBox();
+            addressField = new JComboBox<>();
         } else {
             String[] addrList = new String[Parameters.addresses.size()];
             int index = 0;
             for (Address addr : Parameters.addresses)
                 addrList[index++] = addr.getLabel();
-            addressField = new JComboBox(addrList);
+            addressField = new JComboBox<Object>(addrList);
         }
         addressField.setEditable(true);
         addressField.setSelectedIndex(-1);
@@ -265,7 +265,6 @@ public class SendDialog extends JDialog implements ActionListener {
             if ((tx.isCoinBase() && depth < Parameters.COINBASE_MATURITY) ||
                             (!tx.isCoinBase() && depth < Parameters.TRANSACTION_CONFIRMED)) {
                 it.remove();
-                continue;
             }
         }
         //

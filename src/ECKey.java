@@ -130,7 +130,7 @@ public class ECKey {
         this.privKey = privKey;
         if (pubKey != null) {
             this.pubKey = pubKey;
-            isCompressed = pubKey.length==33 ? true : false;
+            isCompressed = (pubKey.length==33);
         } else if (privKey != null) {
             this.pubKey = pubKeyFromPrivKey(privKey, compressed);
             isCompressed = compressed;
@@ -240,7 +240,7 @@ public class ECKey {
      * @return                          TRUE if there is a private key
      */
     public boolean hasPrivKey() {
-        return privKey!=null ? true : false;
+        return (privKey!=null);
     }
 
     /**

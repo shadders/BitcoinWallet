@@ -18,13 +18,9 @@ package BitcoinWallet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.EOFException;
-
 import java.math.BigInteger;
 
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -361,6 +357,7 @@ public abstract class Wallet {
      * database and then retry.
      *
      * @param       chainHash               The block hash of the chain head
+     * @return                              List of blocks in the chain leading to the new head
      * @throws      BlockNotFoundException  A block in the chain was not found
      * @throws      WalletException         Unable to get blocks from the database
      */

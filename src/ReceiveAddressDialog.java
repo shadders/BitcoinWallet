@@ -16,7 +16,6 @@
 package BitcoinWallet;
 
 import javax.swing.*;
-import javax.swing.event.*;
 import javax.swing.table.*;
 import java.awt.*;
 import java.awt.event.*;
@@ -149,6 +148,7 @@ public class ReceiveAddressDialog extends JDialog implements ActionListener {
      *
      * @param   ae              Action event
      */
+    @Override
     public void actionPerformed(ActionEvent ae) {
 
         //
@@ -343,6 +343,7 @@ public class ReceiveAddressDialog extends JDialog implements ActionListener {
          * @param       column      Column number
          * @return                  Returns the object associated with the cell
          */
+        @Override
         public Object getValueAt(int row, int column) {
             if (row >= Parameters.keys.size())
                 throw new IndexOutOfBoundsException("Table row "+row+" is not valid");

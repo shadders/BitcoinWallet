@@ -19,7 +19,6 @@ import java.io.ByteArrayInputStream;
 import java.io.EOFException;
 import java.io.IOException;
 import java.util.Iterator;
-import java.util.List;
 
 /**
  * <p>A 'notfound' message is returned when one or more items in a 'getdata' request

@@ -15,8 +15,6 @@
  */
 package BitcoinWallet;
 
-import java.util.List;
-
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
@@ -31,7 +29,7 @@ import java.awt.Toolkit;
 public class SignDialog extends JDialog implements ActionListener {
 
     /** Name field */
-    private JComboBox nameField;
+    private JComboBox<Object> nameField;
 
     /** Message field */
     private JTextArea messageField;
@@ -57,7 +55,7 @@ public class SignDialog extends JDialog implements ActionListener {
         int index = 0;
         for (ECKey key : Parameters.keys)
             keyLabels[index++] = key.getLabel();
-        nameField = new JComboBox(keyLabels);
+        nameField = new JComboBox<Object>(keyLabels);
         nameField.setPreferredSize(new Dimension(200, 25));
         JPanel namePane = new JPanel();
         namePane.add(new JLabel("Key  ", JLabel.RIGHT));

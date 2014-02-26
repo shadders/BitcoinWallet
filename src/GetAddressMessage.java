@@ -27,6 +27,7 @@ public class GetAddressMessage {
      * Builds the 'getaddr' message
      *
      * @param       peer            The remote peer
+     * @return                      Message to send to peer
      */
     public static Message buildGetAddressMessage(Peer peer) {
         //

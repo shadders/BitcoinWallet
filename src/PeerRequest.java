@@ -114,10 +114,11 @@ public class PeerRequest {
     /**
      * Checks if a peer has already been contacted for this request
      *
-     * @return      TRUE if the peer has been contacted
+     * @param       peer            Peer
+     * @return                      TRUE if the peer has been contacted
      */
     public boolean wasContacted(Peer peer) {
-        return (peerMap.get(peer)!=null ? true : false);
+        return (peerMap.get(peer)!=null);
     }
 
     /**

@@ -510,7 +510,7 @@ public class WalletPg extends Wallet {
                     String label = r.getString(4);
                     boolean isChange = r.getBoolean(5);
                     BigInteger privKey = encPrivKey.getPrivKey(Parameters.passPhrase);
-                    ECKey key = new ECKey(null, privKey, pubKey.length==33?true:false);
+                    ECKey key = new ECKey(null, privKey, (pubKey.length==33));
                     if (!Arrays.equals(key.getPubKey(), pubKey))
                         throw new KeyException("Private key does not match public key");
                     key.setCreationTime(creationTime);
@@ -1107,6 +1107,7 @@ public class WalletPg extends Wallet {
      * database and then retry.
      *
      * @param       chainHash               The block hash of the chain head
+     * @return                              List of blocks in the chain leading to the new head
      * @throws      BlockNotFoundException  A block in the chain was not found
      * @throws      WalletException         Unable to get blocks from the database
      */
@@ -1417,7 +1418,7 @@ public class WalletPg extends Wallet {
      * @throws      WalletException     Unable to access the database server
      */
     private boolean tableExists(String table) throws WalletException {
-        boolean tableExists = false;
+        boolean tableExists;
         Connection conn = checkConnection();
         try {
             try (Statement s = conn.createStatement()) {

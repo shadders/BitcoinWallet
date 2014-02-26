@@ -81,7 +81,8 @@ public class OutPoint {
     /**
      * Compares two objects
      *
-     * @return      TRUE if they are equal
+     * @param       obj             Object to compare
+     * @return                      TRUE if they are equal
      */
     @Override
     public boolean equals(Object obj) {

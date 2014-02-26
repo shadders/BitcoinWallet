@@ -156,6 +156,7 @@ public class SendAddressDialog extends JDialog implements ActionListener {
      *
      * @param   ae              Action event
      */
+    @Override
     public void actionPerformed(ActionEvent ae) {
         //
         // "new"   - Create a new address entry
@@ -328,6 +329,7 @@ public class SendAddressDialog extends JDialog implements ActionListener {
          *
          * @return                  The number of rows
          */
+        @Override
         public int getRowCount() {
             return Parameters.addresses.size();
         }
@@ -339,6 +341,7 @@ public class SendAddressDialog extends JDialog implements ActionListener {
          * @param       column      Column number
          * @return                  Returns the object associated with the cell
          */
+        @Override
         public Object getValueAt(int row, int column) {
             if (row >= Parameters.addresses.size())
                 throw new IndexOutOfBoundsException("Table row "+row+" is not valid");

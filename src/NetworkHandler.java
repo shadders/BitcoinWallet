@@ -150,6 +150,7 @@ public class NetworkHandler implements Runnable {
         //
         timer = new Timer();
         timer.schedule(new TimerTask() {
+            @Override
             public void run() {
                 wakeup();
             }
@@ -359,6 +360,8 @@ public class NetworkHandler implements Runnable {
 
     /**
      * Broadcasts a message to all connected peers
+     *
+     * @param       msg             Message
      *
      * Block notifications will be sent to peers that are providing network services.
      * Transaction notifications will be sent to peers that have requested transaction relays.
@@ -751,8 +754,8 @@ public class NetworkHandler implements Runnable {
      */
     private void processRequests() {
         long currentTime = System.currentTimeMillis()/1000;
-        PeerRequest request = null;
-        Peer peer = null;
+        PeerRequest request;
+        Peer peer;
         //
         // Check for request timeouts (we will wait 30 seconds for a response)
         //
@@ -855,7 +858,7 @@ public class NetworkHandler implements Runnable {
         // to assume that any node in the DNS seed list is a network node.
         //
         for (String host : dnsSeeds) {
-            PeerAddress peerAddress = null;
+            PeerAddress peerAddress;
             try {
                 InetAddress[] addresses = InetAddress.getAllByName(host);
                 for (InetAddress address : addresses) {

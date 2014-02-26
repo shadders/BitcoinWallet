@@ -224,6 +224,7 @@ public class MerkleBranch {
      * before starting.
      *
      * @param       matchedHashes           Return the hashes of the matched leaf transactions
+     * @return                              Merkle root
      * @throws      VerificationException   Malformed Merkle branch
      */
     public Sha256Hash calculateMerkleRoot(List<Sha256Hash> matchedHashes) throws VerificationException {

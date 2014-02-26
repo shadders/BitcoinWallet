@@ -16,8 +16,6 @@
  */
 package BitcoinWallet;
 
-import java.util.List;
-
 /**
  * <p>A Bloom filter is a probabilistic data structure which can be sent to another client
  * so that it can avoid sending us transactions that aren't relevant to our set of keys.
@@ -42,10 +40,14 @@ import java.util.List;
  */
 public class BloomFilter {
 
-    /** Bloom filter flags */
-    public static final int UPDATE_NONE = 0;            // Filter is not adjusted for matching outputs
-    public static final int UPDATE_ALL = 1;             // Filter is adjusted for all matching outputs
-    public static final int UPDATE_P2PUBKEY_ONLY = 2;   // Filter is adjusted only for pay-to-pubkey/multi-sig
+    /** Bloom filter - Filter is not adjusted for matching outputs */
+    public static final int UPDATE_NONE = 0;
+
+    /** Bloom filter - Filter is adjusted for all matching outputs */
+    public static final int UPDATE_ALL = 1;
+
+    /** Bloom filter - Filter is adjusted only for pay-to-pubkey or pay-to-multi-sig */
+    public static final int UPDATE_P2PUBKEY_ONLY = 2;
 
     /** Maximum filter size */
     public static final int MAX_FILTER_SIZE = 36000;

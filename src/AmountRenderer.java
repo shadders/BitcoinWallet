@@ -84,6 +84,7 @@ public final class AmountRenderer extends DefaultTableCellRenderer {
      * @param       hasFocus        TRUE if the cell has the focus
      * @param       row             Table row
      * @param       column          Table column
+     * @return                      Renderer component
      */
     @Override
     public Component getTableCellRendererComponent(JTable table, Object value,

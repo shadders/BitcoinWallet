@@ -33,15 +33,6 @@ import java.math.BigInteger;
  */
 public class TransactionOutput {
 
-    /** Unspendable 'Proof-of-burn' script (1CounterpartyXXXX...) */
-    private final byte[] unspendableScript = new byte[] {
-        (byte)0x76, (byte)0xa9, (byte)0x14,
-        (byte)0x81, (byte)0x88, (byte)0x95, (byte)0xf3, (byte)0xdc, (byte)0x2c, (byte)0x17, (byte)0x86,
-        (byte)0x29, (byte)0xd3, (byte)0xd2, (byte)0xd8, (byte)0xfa, (byte)0x3e, (byte)0xc4, (byte)0xa3,
-        (byte)0xf8, (byte)0x17, (byte)0x98, (byte)0x21,
-        (byte)0x88, (byte)0xac
-    };
-
     /** Output value in Satoshis (0.00000001 BTC) */
     private BigInteger value;
 

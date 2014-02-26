@@ -25,6 +25,8 @@ public class StringRenderer extends DefaultTableCellRenderer {
 
     /**
      * Create a reconcile renderer
+     *
+     * @param       alignment       Desired alignment
      */
     public StringRenderer(int alignment) {
         super();

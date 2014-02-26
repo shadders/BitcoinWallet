@@ -117,12 +117,12 @@ public final class MainWindow extends JFrame implements ActionListener, Connecti
 
         menuItem = new JMenuItem("Receive Addresses");
         menuItem.setActionCommand("view receive");
-        menuItem.addActionListener(this);;
+        menuItem.addActionListener(this);
         menu.add(menuItem);
 
         menuItem = new JMenuItem("Send Addresses");
         menuItem.setActionCommand("view send");
-        menuItem.addActionListener(this);;
+        menuItem.addActionListener(this);
         menu.add(menuItem);
 
         menuBar.add(menu);
@@ -228,6 +228,7 @@ public final class MainWindow extends JFrame implements ActionListener, Connecti
         if (!synchronizingTitle && Parameters.networkChainHeight > Parameters.wallet.getChainHeight()) {
             synchronizingTitle = true;
             javax.swing.SwingUtilities.invokeLater(new Runnable() {
+                @Override
                 public void run() {
                     setTitle("Bitcoin Wallet - Synchronizing with network");
                 }
@@ -281,6 +282,7 @@ public final class MainWindow extends JFrame implements ActionListener, Connecti
         // no longer synchronizing with the network if we are now caught up.
         //
         javax.swing.SwingUtilities.invokeLater(new Runnable() {
+            @Override
             public void run() {
                 transactionPanel.statusChanged();
                 if (synchronizingTitle && Parameters.networkChainHeight <= Parameters.wallet.getChainHeight()) {
@@ -297,6 +299,7 @@ public final class MainWindow extends JFrame implements ActionListener, Connecti
     @Override
     public void txUpdated() {
         javax.swing.SwingUtilities.invokeLater(new Runnable() {
+            @Override
             public void run() {
                 transactionPanel.walletChanged();
             }
