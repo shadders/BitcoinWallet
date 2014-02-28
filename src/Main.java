@@ -21,6 +21,7 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.InputStream;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -49,8 +50,8 @@ import javax.swing.*;
  * <p>The following command-line arguments are supported:</p>
  * <ul>
  * <li>Specify PROD to use the production Bitcoin network or TEST to use the regression test network.
- * Files for the production network are stored in ~\AppData\Roaming\BitcoinWallet while files for the
- * test network are stored in ~\AppData\Roaming\BitcoinWallet\TestNet.</li>
+ * Files for the production network are stored in UserHome\AppData\Roaming\BitcoinWallet while files for the
+ * test network are stored in UserHome\AppData\Roaming\BitcoinWallet\TestNet.</li>
  *
  * <li>Specify the IP address and port of the first peer node that we will use (address:port).  If omitted, we will
  * use DNS discovery to locate peer nodes.  You must specify a peer node for the test network since
@@ -65,7 +66,7 @@ import javax.swing.*;
  * <col width=70%/>
  * <tr><td>-Dbitcoin.datadir=directory-path</td>
  * <td>Specifies the application data directory.  Application data will be stored in
- * ~/AppData/Roaming/BitcoinWallet if no path is specified.</td></tr>
+ * UserHome/AppData/Roaming/BitcoinWallet if no path is specified.</td></tr>
  *
  * <tr><td>-Djava.util.logging.config.file=file-path</td>
  * <td>Specifies the logger configuration file.  The logger properties will be read from 'logging.properties'
@@ -143,6 +144,7 @@ public class Main {
             //
             // Initialize the network parameters
             //
+            String genesisName;
             if (testNetwork) {
                 dataPath = dataPath+"\\TestNet";
                 Parameters.MAGIC_NUMBER = Parameters.MAGIC_NUMBER_TESTNET;
@@ -151,6 +153,7 @@ public class Main {
                 Parameters.GENESIS_BLOCK_HASH = Parameters.GENESIS_BLOCK_TESTNET;
                 Parameters.GENESIS_BLOCK_TIME = Parameters.GENESIS_TIME_TESTNET;
                 Parameters.MAX_TARGET_DIFFICULTY = Parameters.MAX_DIFFICULTY_TESTNET;
+                genesisName = "GenesisBlock/GenesisBlockTest.dat";
             } else {
                 Parameters.MAGIC_NUMBER = Parameters.MAGIC_NUMBER_PRODNET;
                 Parameters.ADDRESS_VERSION = Parameters.ADDRESS_VERSION_PRODNET;
@@ -158,8 +161,18 @@ public class Main {
                 Parameters.GENESIS_BLOCK_HASH = Parameters.GENESIS_BLOCK_PRODNET;
                 Parameters.GENESIS_BLOCK_TIME = Parameters.GENESIS_TIME_PRODNET;
                 Parameters.MAX_TARGET_DIFFICULTY = Parameters.MAX_DIFFICULTY_PRODNET;
+                genesisName = "GenesisBlock/GenesisBlockProd.dat";
             }
             Parameters.PROOF_OF_WORK_LIMIT = Utils.decodeCompactBits(Parameters.MAX_TARGET_DIFFICULTY);
+            //
+            // Load the genesis block
+            //
+            Class<?> mainClass = Class.forName("BitcoinWallet.Main");
+            InputStream classStream = mainClass.getClassLoader().getResourceAsStream(genesisName);
+            if (classStream == null)
+                throw new IllegalStateException("Genesis block resource not found");
+            Parameters.GENESIS_BLOCK_BYTES = new byte[classStream.available()];
+            classStream.read(Parameters.GENESIS_BLOCK_BYTES);
             //
             // Create the data directory if it doesn't exist
             //
@@ -219,10 +232,9 @@ public class Main {
                     System.exit(0);
             }
             //
-            // Create the wallet.  We will use the 'jwallet' database for the production network
-            // and the 'jtestwlt' database for the test network.
+            // Create the wallet
             //
-            Parameters.wallet = new WalletPg(testNetwork?"jtestwlt":"jwallet");
+            Parameters.wallet = new WalletLdb(dataPath);
             //
             // Get the address and key lists
             //

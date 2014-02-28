@@ -5,5 +5,7 @@
 *.java text eol=lf
 
 # Image files are binary
+*.dat binary
 *.gif binary
 *.jpg binary
+

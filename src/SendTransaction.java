@@ -33,23 +33,6 @@ public class SendTransaction extends WalletTransaction {
     /**
      * Creates a SendTransaction
      *
-     * @param       normID              Normalized transaction ID
-     * @param       txHash              Transaction hash
-     * @param       txTime              Transaction timestamp
-     * @param       blockHash           Chain block containing the transaction
-     * @param       address             Send address
-     * @param       value               Transaction value
-     * @param       fee                 Transaction fee
-     * @param       txData              Serialized transaction
-     */
-    public SendTransaction(Sha256Hash normID, Sha256Hash txHash, long txTime, Sha256Hash blockHash,
-                                        Address address, BigInteger value, BigInteger fee, byte[] txData) {
-        this(normID, txHash, txTime, blockHash, address, value, fee, false, txData);
-    }
-
-    /**
-     * Creates a SendTransaction
-     *
      * @param       normID              Normalized transactionID
      * @param       txHash              Transaction hash
      * @param       txTime              Transaction timestamp
@@ -57,13 +40,11 @@ public class SendTransaction extends WalletTransaction {
      * @param       address             Send address
      * @param       value               Transaction value
      * @param       fee                 Transaction fee
-     * @param       isDeleted           TRUE if transaction is deleted
      * @param       txData              Serialized transaction
      */
     public SendTransaction(Sha256Hash normID, Sha256Hash txHash, long txTime, Sha256Hash blockHash,
-                            Address address, BigInteger value, BigInteger fee,
-                            boolean isDeleted, byte[] txData) {
-        super(normID, txHash, txTime, blockHash, address, value, isDeleted);
+                            Address address, BigInteger value, BigInteger fee, byte[] txData) {
+        super(normID, txHash, txTime, blockHash, address, value);
         this.fee = fee;
         this.txData = txData;
     }

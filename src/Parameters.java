@@ -98,6 +98,9 @@ public class Parameters {
     /** Genesis block hash */
     public static String GENESIS_BLOCK_HASH;
 
+    /** Genesis block bytes */
+    public static byte[] GENESIS_BLOCK_BYTES;
+
     /** Production network genesis block time */
     public static final long GENESIS_TIME_PRODNET = 0x495fab29L;
 

@@ -60,7 +60,7 @@ public class BlockHeader {
     private List<Sha256Hash> matches;
 
     /**
-     * Creates a new Blockheader
+     * Creates a new BlockHeader
      *
      * @param       blockHash           Block hash
      * @param       prevHash            Previous block hash
@@ -75,7 +75,7 @@ public class BlockHeader {
     }
 
     /**
-     * Creates a Blockheader from a database entry
+     * Creates a BlockHeader from a database entry
      *
      * @param       blockHash           Block hash
      * @param       prevHash            Previous block hash
@@ -104,10 +104,11 @@ public class BlockHeader {
     /**
      * Creates a BlockHeader from the serialized block header
      *
-     * @param       bytes               Serialized data
-     * @throws      EOFException        Serialized data is too short
+     * @param       bytes                   Serialized data
+     * @throws      EOFException            Serialized data is too short
+     * @throws      VerificationException   Block verification failed
      */
-    public BlockHeader(byte[] bytes) throws EOFException {
+    public BlockHeader(byte[] bytes) throws EOFException, VerificationException {
         if (bytes.length < HEADER_SIZE)
             throw new EOFException("Header is too short");
         //
@@ -124,6 +125,28 @@ public class BlockHeader {
         onChain = false;
         blockHeight = 0;
         chainWork = BigInteger.ZERO;
+        //
+        // Ensure this block does in fact represent real work done.  If the difficulty is high enough,
+        // we can be fairly certain the work was done by the network.
+        //
+        // The block hash must be less than or equal to the target difficulty (the difficulty increases
+        // by requiring an increasing number of leading zeroes in the block hash)
+        //
+        BigInteger target = Utils.decodeCompactBits(targetDifficulty);
+        if (target.signum() <= 0 || target.compareTo(Parameters.PROOF_OF_WORK_LIMIT) > 0)
+            throw new VerificationException("Target difficulty is not valid",
+                                            Parameters.REJECT_INVALID, blockHash);
+        BigInteger hash = blockHash.toBigInteger();
+        if (hash.compareTo(target) > 0)
+            throw new VerificationException("Block hash is higher than target difficulty",
+                                            Parameters.REJECT_INVALID, blockHash);
+        //
+        // Verify the block timestamp
+        //
+        long currentTime = System.currentTimeMillis()/1000;
+        if (blockTime > currentTime+Parameters.ALLOWED_TIME_DRIFT)
+            throw new VerificationException("Block timestamp is too far in the future",
+                                            Parameters.REJECT_INVALID, blockHash);
     }
 
     /**

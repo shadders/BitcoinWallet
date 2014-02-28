@@ -59,7 +59,7 @@ public class ReceiveTransaction extends WalletTransaction {
                             Sha256Hash blockHash, Address address, BigInteger value, byte[] scriptBytes,
                             boolean isChange, boolean isCoinBase) {
         this(normID, txHash, txIndex, txTime, blockHash, address, value, scriptBytes,
-                            false, isChange, isCoinBase, false, false);
+                            false, isChange, isCoinBase, false);
     }
 
     /**
@@ -77,13 +77,11 @@ public class ReceiveTransaction extends WalletTransaction {
      * @param       isChange            TRUE if the transaction represents change from a send transaction
      * @param       isCoinBase          TRUE if coinbase transaction
      * @param       inSafe              TRUE if the transaction is in the safe
-     * @param       isDeleted           TRUE if the transaction is deleted
      */
     public ReceiveTransaction(Sha256Hash normID, Sha256Hash txHash, int txIndex, long txTime,
                                 Sha256Hash blockHash, Address address, BigInteger value, byte[] scriptBytes,
-                                boolean isSpent, boolean isChange, boolean isCoinBase, boolean inSafe,
-                                boolean isDeleted) {
-        super(normID, txHash, txTime, blockHash, address, value, isDeleted);
+                                boolean isSpent, boolean isChange, boolean isCoinBase, boolean inSafe) {
+        super(normID, txHash, txTime, blockHash, address, value);
         this.txIndex = txIndex;
         this.scriptBytes = scriptBytes;
         this.isSpent = isSpent;

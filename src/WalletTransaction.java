@@ -40,9 +40,6 @@ public class WalletTransaction {
     /** Transaction value */
     protected BigInteger value;
 
-    /** Transaction is deleted */
-    protected boolean isDeleted;
-
     /**
      * Creates a wallet transaction
      *
@@ -52,17 +49,15 @@ public class WalletTransaction {
      * @param       blockHash           Chain block containing the transaction
      * @param       address             Send address
      * @param       value               Transaction value
-     * @param       isDeleted           TRUE if transaction is deleted
      */
     public WalletTransaction(Sha256Hash normID, Sha256Hash txHash, long txTime, Sha256Hash blockHash,
-                                Address address, BigInteger value, boolean isDeleted) {
+                                Address address, BigInteger value) {
         this.normID = normID;
         this.txHash = txHash;
         this.txTime = txTime;
         this.blockHash = blockHash;
         this.address = address;
         this.value = value;
-        this.isDeleted = isDeleted;
     }
 
     /**
@@ -117,23 +112,5 @@ public class WalletTransaction {
      */
     public BigInteger getValue() {
         return value;
-    }
-
-    /**
-     * Checks if the transaction is deleted
-     *
-     * @return                          TRUE if the transaction is deleted
-     */
-    public boolean isDeleted() {
-        return isDeleted;
-    }
-
-    /**
-     * Sets the transaction delete status
-     *
-     * @param       isDeleted           TRUE if the transaction is deleted
-     */
-    public void setDelete(boolean isDeleted) {
-        this.isDeleted = isDeleted;
     }
 }

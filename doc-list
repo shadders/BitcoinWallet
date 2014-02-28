@@ -1,4 +1,4 @@
--classpath lib/bcprov-jdk15on-151.jar;lib/slf4j-api-1.7.5.jar;lib/slf4j-jdk14-1.7.5.jar
+-classpath lib/bcprov-jdk15on-151.jar;lib/slf4j-api-1.7.5.jar;lib/slf4j-jdk14-1.7.5.jar;lib/leveldbjni-all-1.8.jar
 -d doc
 -windowtitle BitcoinWallet
 src/Address.java
@@ -70,5 +70,5 @@ src/VersionMessage.java
 src/Wallet.java
 src/WalletException.java
 src/WalletListener.java
-src/WalletPg.java
+src/WalletLdb.java
 src/WalletTransaction.java
