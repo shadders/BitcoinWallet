@@ -62,3 +62,9 @@ The following command-line options can be specified using -Dname=value
 	JDK INFO corresponds to the SLF4J INFO level	
 	JDK WARNING corresponds to the SLF4J WARN level		
 	JDK SEVERE corresponds to the SLF4J ERROR level		
+
+Sample Windows shortcut:
+
+	C:\Windows\System32\javaw.exe -Xmx256m -Djava.library.path=\Bitcoin\BitcoinWallet -jar \Bitcoin\BitcoinWallet\BitcoinWallet.jar
+
+The leveldbjni.dll file was extracted from the jar file and placed in the \Bitcoin\BitcoinWallet directory.  Specifying java.library.path tells the JVM where to find the native resources.

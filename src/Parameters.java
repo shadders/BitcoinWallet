@@ -43,7 +43,7 @@ public class Parameters {
     public static final int DEFAULT_PORT = 8333;
 
     /** Software identifier */
-    public static final String SOFTWARE_NAME = "/BitcoinWallet:1.0/";
+    public static final String SOFTWARE_NAME = "/BitcoinWallet:1.1/";
 
     /** Production network magic number */
     public static final long MAGIC_NUMBER_PRODNET = 0xd9b4bef9L;
