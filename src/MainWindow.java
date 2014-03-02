@@ -1,5 +1,5 @@
 /**
- * Copyright 2013 Ronald W Hoffman
+ * Copyright 2013-2014 Ronald W Hoffman
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -389,7 +389,7 @@ public final class MainWindow extends JFrame implements ActionListener, Connecti
      */
     private void exportPrivateKeys() throws IOException {
         StringBuilder keyText = new StringBuilder(256);
-        File keyFile = new File(Main.dataPath+"\\BitcoinWallet.keys");
+        File keyFile = new File(Main.dataPath+Main.fileSeparator+"BitcoinWallet.keys");
         if (keyFile.exists())
             keyFile.delete();
         //
@@ -428,7 +428,7 @@ public final class MainWindow extends JFrame implements ActionListener, Connecti
      * @throws      WalletException             Unable to update database
      */
     private void importPrivateKeys() throws IOException, AddressFormatException, WalletException {
-        File keyFile = new File(Main.dataPath+"\\BitcoinWallet.keys");
+        File keyFile = new File(Main.dataPath+Main.fileSeparator+"BitcoinWallet.keys");
         if (!keyFile.exists()) {
             JOptionPane.showMessageDialog(this, "BitcoinWallet.keys does not exist",
                                           "Error", JOptionPane.ERROR_MESSAGE);

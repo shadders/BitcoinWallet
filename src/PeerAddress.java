@@ -1,6 +1,6 @@
 /**
  * Copyright 2011 Google Inc.
- * Copyright 2013 Ronald W Hoffman
+ * Copyright 2013-2014 Ronald W Hoffman
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package BitcoinWallet;
 
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.net.UnknownHostException;
 
 /**
  * A PeerAddress holds an IP address and port number representing the network location of
@@ -75,6 +76,62 @@ public class PeerAddress {
      */
     public PeerAddress(InetSocketAddress socket) {
         this(socket.getAddress(), socket.getPort());
+    }
+
+    /**
+     * Constructs a peer address from a string in the format "[address]:port" where
+     * address can be "nnn.nnn.nnn.nnn" for IPv4 or "xxxx:xxxx:xxxx;xxxx:xxxx:xxxx:xxxx:xxxx"
+     * for IPv6.
+     *
+     * @param       peerString              Address string
+     * @throws      UnknownHostException    Incorrect address format
+     */
+    public PeerAddress(String peerString) throws UnknownHostException {
+        //
+        // Separate the address and the port
+        //
+        int addrSep = peerString.lastIndexOf(']');
+        int portSep = peerString.lastIndexOf(':');
+        if (peerString.charAt(0) != '[' || addrSep < 0 ||
+                                portSep < addrSep || portSep == peerString.length()-1)
+                throw new UnknownHostException("Incorrect [address]:port format");
+        String addrString = peerString.substring(1, addrSep);
+        String portString = peerString.substring(portSep+1);
+        //
+        // Decode the address
+        //
+        byte[] addrBytes;
+        if (addrString.indexOf('.') >= 0) {
+            String[] addrParts = addrString.split("\\D");
+            if (addrParts.length != 4)
+                throw new UnknownHostException("Incorrect IPv4 address format");
+            addrBytes = new byte[4];
+            for (int j=0; j<4; j++)
+                addrBytes[j] = (byte)Integer.parseInt(addrParts[j]);
+        } else if (addrString.indexOf(':') >= 0) {
+            String[] addrParts = addrString.split(":");
+            if (addrParts.length != 8)
+                throw new UnknownHostException("Incorrect IPv6 address format");
+            addrBytes = new byte[16];
+            int offset = 0;
+            for (int j=0; j<8; j++) {
+                if (addrParts[j].length() == 0) {
+                    offset += 2;
+                } else {
+                    int nibble = Integer.parseInt(addrParts[j], 16);
+                    addrBytes[offset++] = (byte)(nibble>>8);
+                    addrBytes[offset++] = (byte)nibble;
+                }
+            }
+        } else {
+            throw new UnknownHostException("Incorrect [address]:port format");
+        }
+        //
+        // Create the address and port values
+        //
+        address = InetAddress.getByAddress(addrBytes);
+        port = Integer.parseInt(portString);
+        timeSeen = System.currentTimeMillis()/1000;
     }
 
     /**

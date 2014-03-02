@@ -1,5 +1,5 @@
 /**
- * Copyright 2013 Ronald W Hoffman
+ * Copyright 2013-2014 Ronald W Hoffman
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -92,7 +92,8 @@ public class WalletLdb extends Wallet {
         //
         // Create the LevelDB base directory
         //
-        File databaseDir = new File(dataPath+"\\LevelDB");
+        String basePath = dataPath+Main.fileSeparator+"LevelDB";
+        File databaseDir = new File(basePath);
         if (!databaseDir.exists())
             databaseDir.mkdirs();
         try {
@@ -101,37 +102,37 @@ public class WalletLdb extends Wallet {
             //
             // Open the BlockChain database
             //
-            File fileBlockChain = new File(dataPath+"\\LevelDB\\BlockChainDB");
+            File fileBlockChain = new File(basePath+Main.fileSeparator+"BlockChainDB");
             dbBlockChain = JniDBFactory.factory.open(fileBlockChain, options);
             //
             // Open the Headers database
             //
-            File fileBlocks = new File(dataPath+"\\LevelDB\\HeadersDB");
+            File fileBlocks = new File(basePath+Main.fileSeparator+"HeadersDB");
             dbHeaders = JniDBFactory.factory.open(fileBlocks, options);
             //
             // Open the Child database
             //
-            File fileChild = new File(dataPath+"\\LevelDB\\ChildDB");
+            File fileChild = new File(basePath+Main.fileSeparator+"ChildDB");
             dbChild = JniDBFactory.factory.open(fileChild, options);
             //
             // Open the Received database
             //
-            File fileReceived = new File(dataPath+"\\LevelDB\\ReceivedDB");
+            File fileReceived = new File(basePath+Main.fileSeparator+"ReceivedDB");
             dbReceived = JniDBFactory.factory.open(fileReceived, options);
             //
             // Open the Sent database
             //
-            File fileSent = new File(dataPath+"\\LevelDB\\SentDB");
+            File fileSent = new File(basePath+Main.fileSeparator+"SentDB");
             dbSent = JniDBFactory.factory.open(fileSent, options);
             //
             // Open the Address database
             //
-            File fileAddress = new File(dataPath+"\\LevelDB\\AddressDB");
+            File fileAddress = new File(basePath+Main.fileSeparator+"AddressDB");
             dbAddress = JniDBFactory.factory.open(fileAddress, options);
             //
             // Open the Keys database
             //
-            File fileKeys = new File(dataPath+"\\LevelDB\\KeysDB");
+            File fileKeys = new File(basePath+Main.fileSeparator+"KeysDB");
             dbKeys = JniDBFactory.factory.open(fileKeys, options);
             //
             // Get the initial values from the database

@@ -1,5 +1,5 @@
 /**
- * Copyright 2013 Ronald W Hoffman
+ * Copyright 2013-2014 Ronald W Hoffman
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,7 +26,6 @@ import java.io.InputStream;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 
-import java.net.InetAddress;
 import java.net.UnknownHostException;
 
 import java.util.ArrayList;
@@ -90,6 +89,18 @@ public class Main {
     /** Conversion value for BTC to Satoshi (1 Satoshi = 0.00000001 BTC) */
     private static final BigDecimal SATOSHI = new BigDecimal("100000000");
 
+    /** File separator */
+    public static String fileSeparator;
+
+    /** Line separator */
+    public static String lineSeparator;
+
+    /** User home */
+    public static String userHome;
+
+    /** Operating system */
+    public static String osName;
+
     /** Application properties */
     public static Properties properties;
 
@@ -130,12 +141,24 @@ public class Main {
      */
     public static void main(String[] args) {
         try {
+            fileSeparator = System.getProperty("file.separator");
+            lineSeparator = System.getProperty("line.separator");
+            userHome = System.getProperty("user.home");
+            osName = System.getProperty("os.name").toLowerCase();
             //
             // Process command-line options
             //
             dataPath = System.getProperty("bitcoin.datadir");
-            if (dataPath == null)
-                dataPath = System.getProperty("user.home")+"\\AppData\\Roaming\\BitcoinWallet";
+            if (dataPath == null) {
+                if (osName.startsWith("win"))
+                    dataPath = userHome+"\\Appdata\\Roaming\\BitcoinWallet";
+                else if (osName.startsWith("linux"))
+                    dataPath = userHome+"/.BitcoinWallet";
+                else if (osName.startsWith("mac os"))
+                    dataPath = userHome+"/Library/Application Support/BitcoinWallet";
+                else
+                    dataPath = userHome+"/BitcoinWallet";
+            }
             //
             // Process command-line arguments
             //
@@ -146,7 +169,7 @@ public class Main {
             //
             String genesisName;
             if (testNetwork) {
-                dataPath = dataPath+"\\TestNet";
+                dataPath = dataPath+fileSeparator+"TestNet";
                 Parameters.MAGIC_NUMBER = Parameters.MAGIC_NUMBER_TESTNET;
                 Parameters.ADDRESS_VERSION = Parameters.ADDRESS_VERSION_TESTNET;
                 Parameters.DUMPED_PRIVATE_KEY_VERSION = Parameters.DUMPED_PRIVATE_KEY_VERSION_TESTNET;
@@ -182,7 +205,7 @@ public class Main {
             //
             // Initialize the logging properties from 'logging.properties'
             //
-            File logFile = new File(dataPath+"\\logging.properties");
+            File logFile = new File(dataPath+fileSeparator+"logging.properties");
             if (logFile.exists()) {
                 FileInputStream inStream = new FileInputStream(logFile);
                 LogManager.getLogManager().readConfiguration(inStream);
@@ -195,7 +218,7 @@ public class Main {
             //
             // Load the saved application properties
             //
-            propFile = new File(dataPath+"\\BitcoinWallet.properties");
+            propFile = new File(dataPath+fileSeparator+"BitcoinWallet.properties");
             properties = new Properties();
             if (propFile.exists()) {
                 try (FileInputStream in = new FileInputStream(propFile)) {
@@ -396,19 +419,8 @@ public class Main {
         int count = args.length - 1;
         if (count > 0) {
             peerAddresses = new PeerAddress[count];
-            for (int i=0; i<count; i++) {
-                String[] peerParts = args[i+1].split(":");
-                if (peerParts.length != 2)
-                    throw new IllegalArgumentException("Incorrect address:port specification: "+args[i+1]);
-                String[] addrParts = peerParts[0].split("\\D");
-                if (addrParts.length != 4)
-                    throw new IllegalArgumentException("Invalid IPv4 address specification: "+peerParts[0]);
-                byte[] peerAddr = new byte[4];
-                for (int j=0; j<4; j++)
-                    peerAddr[j] = (byte)Integer.parseInt(addrParts[j]);
-                InetAddress address = InetAddress.getByAddress(peerAddr);
-                peerAddresses[i] = new PeerAddress(address, Integer.parseInt(peerParts[1]));
-            }
+            for (int i=0; i<count; i++)
+                peerAddresses[i] = new PeerAddress(args[i+1]);
         }
         if (testNetwork && peerAddresses == null)
             throw new IllegalArgumentException("You must specify a peer for the test network");
