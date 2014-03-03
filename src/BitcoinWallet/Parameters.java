@@ -1,5 +1,5 @@
 /**
- * Copyright 2013 Ronald W Hoffman
+ * Copyright 2013-2014 Ronald W Hoffman
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,7 +43,7 @@ public class Parameters {
     public static final int DEFAULT_PORT = 8333;
 
     /** Software identifier */
-    public static final String SOFTWARE_NAME = "/BitcoinWallet:1.1/";
+    public static final String SOFTWARE_NAME = "/BitcoinWallet:1.2/";
 
     /** Production network magic number */
     public static final long MAGIC_NUMBER_PRODNET = 0xd9b4bef9L;

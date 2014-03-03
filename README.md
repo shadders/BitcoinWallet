@@ -11,7 +11,9 @@ BouncyCastle (1.51 or later) is used for the elliptic curve functions.  Version 
 
 Simple Logging Facade (1.7.5 or later) is used for console and file logging.  I'm using the JDK logger implementation which is controlled by the logging.properties file located in the application data directory.  If no logging.properties file is found, the system logging.properties file will be used (which defaults to logging to the console only).
 
-A compiled version is available here: https://drive.google.com/folderview?id=0B1312_6UqRHPYjUtbU1hdW9VMW8&usp=sharing.  Download BitcoinWallet-1.1.zip and extract the files to a directory of your choice.  If you are building from the source, the dependent jar files can also be obtained here.
+Google Protocol Buffers are used for the payment protocol support (BIP0070).  You can learn more about protocol buffers at https://developers.google.com/protocol-buffers/.
+
+A compiled version is available here: https://drive.google.com/folderview?id=0B1312_6UqRHPYjUtbU1hdW9VMW8&usp=sharing.  Download BitcoinWallet-1.2.zip and extract the files to a directory of your choice.  If you are building from the source, the dependent jar files can also be obtained here.
 
 
 Build
@@ -26,10 +28,11 @@ Here are the steps for a manual build:
   - Download BouncyCastle 1.51 or later to 'lib': https://www.bouncycastle.org/
   - Download Simple Logging Facade 1.7.5 or later to 'lib': http://www.slf4j.org/
   - Download leveldbjni 1.8 or later to 'lib': http://repo2.maven.org/maven2/org/fusesource/leveldbjni/leveldbjni-all/1.8/
+  - Download Protocol Buffers 2.5.0 or later to 'lib': https://developers.google.com/protocol-buffers/downloads/.  You just need the jar file unless you want to recompile paymentrequest.proto (a compiled Protos.java is included in the source directory)
   - Change to the BitcoinWallet directory (with subdirectories 'doc', 'lib', 'classes' and 'src')
   - The manifest.mf, build-list and doc-list files specify the classpath for the dependent jar files.  Update the list as required to match what you downloaded.
   - Build the classes: javac @build-list
-  - Build the jar: jar cmf manifest.mf BitcoinWallet.jar -C classes BitcoinWallet -C resources GenesisBlock
+  - Build the jar: jar cmf manifest.mf BitcoinWallet.jar -C classes . -C resources .
   - Build the documentation: javadoc @doc-list
   - Copy BitcoinWallet.jar and the 'lib' directory to wherever you want to store the executables.
   - Create a shortcut to start BitcoinWallet using java.exe for a command window or javaw.exe for GUI only.  For example:
@@ -42,18 +45,19 @@ Runtime Options
 
 The following command-line arguments are supported:
 	
-  - PROD peer1 peer2 ...	
-    Start the program using the production network. Application files are stored in the application data directory and the production database is used. DNS discovery will be used if no peer nodes are specified.
+  - PROD
+    Start the program using the production network. Application files are stored in the application data directory and the production database is used. DNS discovery will be used to locate peer nodes.
 	
-  - TEST peer1 peer2 ...	
-    Start the program using the regression test network. Application files are stored in the TestNet folder in the application data directory and the test database is used. At least one peer node must be specified since DNS discovery is not supported for the regression test network.
-	
-A peer is specified as address:port.
+  - TEST
+    Start the program using the regression test network. Application files are stored in the TestNet folder in the application data directory and the test database is used. At least one peer node must be specified in JavaBitcoin.conf since DNS discovery is not supported for the regression test network.
 
 The following command-line options can be specified using -Dname=value
 
   - bitcoin.datadir=directory-path	
-    Specifies the application data directory. Application data will be stored in /UserHome/AppData/Roaming/BitcoinWallet if no path is specified.
+    Specifies the application data directory. Application data will be stored in a system-specific directory if this option is omitted:
+	    - Linux: user-home/.BitcoinWallet
+		- Mac: user-home/Library/Application Support/BitcoinWallet
+		- Windows: user-home/AppData/Roaming/BitcoinWallet
 	
   - java.util.logging.config.file=file-path		
     Specifies the logger configuration file. The logger properties will be read from 'logging.properties' in the application data directory. If this file is not found, the 'java.util.logging.config.file' system property will be used to locate the logger configuration file. If this property is not defined, the logger properties will be obtained from jre/lib/logging.properties.
@@ -63,8 +67,13 @@ The following command-line options can be specified using -Dname=value
 	JDK WARNING corresponds to the SLF4J WARN level		
 	JDK SEVERE corresponds to the SLF4J ERROR level		
 
+The following configuration options can be specified in JavaBitcoin.conf.  This file is optional and must be in the application directory in order to be used.
+
+	- connect=[address]:port		
+	  Specifies the address and port of a peer node.  This statement can be repeated to define multiple nodes.  If this option is specified, onnections will be created to only the listed addresses and DNS discovery will not be used.
+		
 Sample Windows shortcut:
 
-	C:\Windows\System32\javaw.exe -Xmx256m -Djava.library.path=\Bitcoin\BitcoinWallet -jar \Bitcoin\BitcoinWallet\BitcoinWallet.jar
+	javaw.exe -Xmx256m -Djava.library.path=\Bitcoin\BitcoinWallet -jar \Bitcoin\BitcoinWallet\BitcoinWallet.jar
 
 The leveldbjni.dll file was extracted from the jar file and placed in the \Bitcoin\BitcoinWallet directory.  Specifying java.library.path tells the JVM where to find the native resources.

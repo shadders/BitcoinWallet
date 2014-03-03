@@ -18,15 +18,21 @@ package BitcoinWallet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.io.InputStream;
+import java.io.IOException;
+import java.io.RandomAccessFile;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
 
 import java.net.UnknownHostException;
+
+import java.nio.channels.FileLock;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -48,15 +54,7 @@ import javax.swing.*;
  *
  * <p>The following command-line arguments are supported:</p>
  * <ul>
- * <li>Specify PROD to use the production Bitcoin network or TEST to use the regression test network.
- * Files for the production network are stored in UserHome\AppData\Roaming\BitcoinWallet while files for the
- * test network are stored in UserHome\AppData\Roaming\BitcoinWallet\TestNet.</li>
- *
- * <li>Specify the IP address and port of the first peer node that we will use (address:port).  If omitted, we will
- * use DNS discovery to locate peer nodes.  You must specify a peer node for the test network since
- * DNS discovery is not supported on that network.</li>
- *
- * <li>Additional peer nodes can be specified by adding additional address:port values</li>
+ * <li>Specify PROD to use the production Bitcoin network or TEST to use the regression test network.</li>
  * </ul>
  *
  * <p>The following command-line options can be specified:</p>
@@ -65,7 +63,13 @@ import javax.swing.*;
  * <col width=70%/>
  * <tr><td>-Dbitcoin.datadir=directory-path</td>
  * <td>Specifies the application data directory.  Application data will be stored in
- * UserHome/AppData/Roaming/BitcoinWallet if no path is specified.</td></tr>
+ * a system-specific default directory if no data directory is specified:
+ *      <ul>
+ *      <li>Linux: user-home/.BitcoinWallet</li>
+ *      <li>Mac: user-home/Library/Application Support/BitcoinWallet</li>
+ *      <li>Windows: user-home\AppData\Roaming\BitcoinWallet</li>
+ *      </ul>
+ * </td></tr>
  *
  * <tr><td>-Djava.util.logging.config.file=file-path</td>
  * <td>Specifies the logger configuration file.  The logger properties will be read from 'logging.properties'
@@ -79,6 +83,18 @@ import javax.swing.*;
  *      <li>JDK SEVERE corresponds to the SLF4J ERROR level</li>
  *      </ul>
  *  </td></tr>
+ * </table>
+ *
+ * <p>The following configuration options can be specified in BitcoinWallet.conf.  Blank lines and lines beginning
+ * with '#' are ignored.</p>
+ * <table>
+ * <col width=30%/>
+ * <col width=70%/>
+ * <tr><td>connect=[address]:port</td>
+ * <td>Connect to the specified peer.  The connect option can be repeated to connect to multiple peers.
+ * If one or more connect options are specified, connections will be created to just the listed peers.
+ * If no connect option is specified, DNS discovery will be used along with the broadcast peer addresses to create
+ * outbound connections.</td></tr>
  * </table>
  */
 public class Main {
@@ -100,6 +116,12 @@ public class Main {
 
     /** Operating system */
     public static String osName;
+
+    /** Application lock file */
+    private static RandomAccessFile lockFile;
+
+    /** Application lock */
+    private static FileLock fileLock;
 
     /** Application properties */
     public static Properties properties;
@@ -164,12 +186,45 @@ public class Main {
             //
             if (args.length != 0)
                 processArguments(args);
+            if (testNetwork)
+                dataPath = dataPath+fileSeparator+"TestNet";
+            //
+            // Create the data directory if it doesn't exist
+            //
+            File dirFile = new File(dataPath);
+            if (!dirFile.exists())
+                dirFile.mkdirs();
+            //
+            // Initialize the logging properties from 'logging.properties'
+            //
+            File logFile = new File(dataPath+fileSeparator+"logging.properties");
+            if (logFile.exists()) {
+                FileInputStream inStream = new FileInputStream(logFile);
+                LogManager.getLogManager().readConfiguration(inStream);
+            }
+            //
+            // Use the brief logging format
+            //
+            BriefLogFormatter.init();
+            log.info(String.format("Application data path: '%s'", dataPath));
+            //
+            // Open the application lock file
+            //
+            lockFile = new RandomAccessFile(dataPath+fileSeparator+".lock", "rw");
+            fileLock = lockFile.getChannel().tryLock();
+            if (fileLock == null)
+                throw new IllegalStateException("BitcoinWallet is already running");
+            //
+            // Process configuration file options
+            //
+            processConfig();
+            if (testNetwork && peerAddresses == null)
+                throw new IllegalArgumentException("You must specify at least one peer for the test network");
             //
             // Initialize the network parameters
             //
             String genesisName;
             if (testNetwork) {
-                dataPath = dataPath+fileSeparator+"TestNet";
                 Parameters.MAGIC_NUMBER = Parameters.MAGIC_NUMBER_TESTNET;
                 Parameters.ADDRESS_VERSION = Parameters.ADDRESS_VERSION_TESTNET;
                 Parameters.DUMPED_PRIVATE_KEY_VERSION = Parameters.DUMPED_PRIVATE_KEY_VERSION_TESTNET;
@@ -196,25 +251,6 @@ public class Main {
                 throw new IllegalStateException("Genesis block resource not found");
             Parameters.GENESIS_BLOCK_BYTES = new byte[classStream.available()];
             classStream.read(Parameters.GENESIS_BLOCK_BYTES);
-            //
-            // Create the data directory if it doesn't exist
-            //
-            File dirFile = new File(dataPath);
-            if (!dirFile.exists())
-                dirFile.mkdirs();
-            //
-            // Initialize the logging properties from 'logging.properties'
-            //
-            File logFile = new File(dataPath+fileSeparator+"logging.properties");
-            if (logFile.exists()) {
-                FileInputStream inStream = new FileInputStream(logFile);
-                LogManager.getLogManager().readConfiguration(inStream);
-            }
-            //
-            // Use the brief logging format
-            //
-            BriefLogFormatter.init();
-            log.info(String.format("Application data path: '%s'", dataPath));
             //
             // Load the saved application properties
             //
@@ -248,7 +284,6 @@ public class Main {
             //
             // Get the wallet passphrase if it is not specified in the application properties
             //
-            Parameters.passPhrase = properties.getProperty("passphrase");
             if (Parameters.passPhrase == null || Parameters.passPhrase.length() == 0) {
                 Parameters.passPhrase = JOptionPane.showInputDialog("Enter the wallet passphrase");
                 if (Parameters.passPhrase == null || Parameters.passPhrase.length() == 0)
@@ -379,6 +414,14 @@ public class Main {
         //
         saveProperties();
         //
+        // Close the application lock file
+        //
+        try {
+            fileLock.release();
+            lockFile.close();
+        } catch (IOException exc) {
+        }
+        //
         // All done
         //
         System.exit(0);
@@ -412,18 +455,52 @@ public class Main {
         } else if (!args[0].equalsIgnoreCase("PROD")) {
             throw new IllegalArgumentException("Valid options are PROD and TEST");
         }
+    }
+
+    /**
+     * Process the configuration file
+     *
+     * @throws      IllegalArgumentException    Invalid configuration option
+     * @throws      IOException                 Unable to read configuration file
+     * @throws      UnknownHostException        Invalid peer address specified
+     */
+    private static void processConfig() throws IOException, IllegalArgumentException, UnknownHostException {
         //
-        // One or more peer nodes can be specified as addr:port (for example, 127.0.0.1:19000)
-        // These nodes will be used instead of using DNS Discovery to find nodes.
+        // Use the defaults if there is no configuration file
         //
-        int count = args.length - 1;
-        if (count > 0) {
-            peerAddresses = new PeerAddress[count];
-            for (int i=0; i<count; i++)
-                peerAddresses[i] = new PeerAddress(args[i+1]);
+        File configFile = new File(dataPath+Main.fileSeparator+"BitcoinWallet.conf");
+        if (!configFile.exists())
+            return;
+        //
+        // Process the configuration file
+        //
+        List<PeerAddress> addressList = new ArrayList<>(5);
+        try (BufferedReader in = new BufferedReader(new FileReader(configFile))) {
+            String line;
+            while ((line=in.readLine()) != null) {
+                line = line.trim();
+                if (line.length() == 0 || line.charAt(0) == '#')
+                    continue;
+                int sep = line.indexOf('=');
+                if (sep < 1)
+                    throw new IllegalArgumentException(String.format("Invalid configuration option: %s", line));
+                String option = line.substring(0, sep).trim().toLowerCase();
+                String value = line.substring(sep+1).trim();
+                switch (option) {
+                    case "connect":
+                        PeerAddress addr = new PeerAddress(value);
+                        addressList.add(addr);
+                        break;
+                    case "passphrase":
+                        Parameters.passPhrase = value;
+                        break;
+                    default:
+                        throw new IllegalArgumentException(String.format("Invalid configuration option: %s", line));
+                }
+            }
         }
-        if (testNetwork && peerAddresses == null)
-            throw new IllegalArgumentException("You must specify a peer for the test network");
+        if (!addressList.isEmpty())
+            peerAddresses = addressList.toArray(new PeerAddress[addressList.size()]);
     }
 
     /**
