@@ -1,5 +1,5 @@
 /**
- * Copyright 2013 Ronald W Hoffman
+ * Copyright 2013-2014 Ronald W Hoffman
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.math.BigInteger;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -80,39 +80,19 @@ public class Transaction {
     /**
      * Creates a new transaction using the provided inputs
      *
-     * @param       sendAddress             Destination address
-     * @param       sendAmount              Amount to send
-     * @param       txFee                   Transaction fee
-     * @param       inputs                  List of inputs
-     * @param       changeAddress           Address to receive any change
+     * @param       inputs                  List of signed inputs
+     * @param       outputs                 List of outputs
      * @throws      WalletException         Unable to create transaction
      */
-    public Transaction(Address sendAddress, BigInteger sendAmount, BigInteger txFee,
-                                            List<SignedInput> inputs, Address changeAddress)
-                                            throws WalletException {
+    public Transaction(List<SignedInput> inputs, List<TransactionOutput> outputs) throws WalletException {
         txVersion = 1;
-        //
-        // Get the total amount available to send
-        //
-        BigInteger inputAmount = BigInteger.ZERO;
-        for (SignedInput input : inputs)
-            inputAmount = inputAmount.add(input.getValue());
-        BigInteger changeAmount = inputAmount.subtract(sendAmount.add(txFee));
-        if (changeAmount.compareTo(BigInteger.ZERO) < 0)
-            throw new WalletException("Input amount is less than send amount plus transaction fee");
+        txOutputs = outputs;
         //
         // Create the transaction inputs
         //
         txInputs = new ArrayList<>(inputs.size());
         for (int i=0; i<inputs.size(); i++)
             txInputs.add(new TransactionInput(this, i, inputs.get(i).getOutPoint()));
-        //
-        // Create the transaction outputs
-        //
-        txOutputs = new ArrayList<>(2);
-        txOutputs.add(new TransactionOutput(0, sendAmount, sendAddress));
-        if (changeAmount.compareTo(BigInteger.ZERO) > 0)
-            txOutputs.add(new TransactionOutput(1, changeAmount, changeAddress));
         //
         // Now sign each input and create the input scripts
         //

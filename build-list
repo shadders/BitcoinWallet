@@ -8,6 +8,10 @@ src/BitcoinWallet/AddressFormatException.java
 src/BitcoinWallet/AddressMessage.java
 src/BitcoinWallet/AmountRenderer.java
 src/BitcoinWallet/Base58.java
+src/BitcoinWallet/BitcoinPayment.java
+src/BitcoinWallet/BitcoinPaymentException.java
+src/BitcoinWallet/BitcoinURI.java
+src/BitcoinWallet/BitcoinURIException.java
 src/BitcoinWallet/BlockHeader.java
 src/BitcoinWallet/BlockNotFoundException.java
 src/BitcoinWallet/BloomFilter.java
@@ -26,6 +30,7 @@ src/BitcoinWallet/GetBlocksMessage.java
 src/BitcoinWallet/GetDataMessage.java
 src/BitcoinWallet/GetHeadersMessage.java
 src/BitcoinWallet/HeadersMessage.java
+src/BitcoinWallet/InsufficientFeeException.java
 src/BitcoinWallet/InventoryMessage.java
 src/BitcoinWallet/KeyException.java
 src/BitcoinWallet/Main.java

@@ -1,5 +1,5 @@
 /**
- * Copyright 2013 Ronald W Hoffman
+ * Copyright 2013-2014 Ronald W Hoffman
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,10 +17,6 @@ package BitcoinWallet;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Iterator;
 import java.util.List;
 
 import javax.swing.*;
@@ -245,116 +241,57 @@ public class SendDialog extends JDialog implements ActionListener {
      */
     private void sendCoins() throws WalletException {
         //
-        // Get the list of unspent outputs
+        // Get the list of available inputs
         //
-        List<ReceiveTransaction> txList = Parameters.wallet.getReceiveTxList();
-        Iterator<ReceiveTransaction> it = txList.iterator();
-        while (it.hasNext()) {
-            ReceiveTransaction tx = it.next();
-            //
-            // Remove transactions that are in the safe or have already been spent
-            //
-            if (tx.inSafe() || tx.isSpent()) {
-                it.remove();
-                continue;
-            }
-            //
-            // Remove immature and unconfirmed transactions
-            //
-            int depth = Parameters.wallet.getTxDepth(tx.getTxHash());
-            if ((tx.isCoinBase() && depth < Parameters.COINBASE_MATURITY) ||
-                            (!tx.isCoinBase() && depth < Parameters.TRANSACTION_CONFIRMED)) {
-                it.remove();
-            }
-        }
-        //
-        // Sort the unspent outputs based on their value
-        //
-        Collections.sort(txList, new ReceiveTxComparator());
+        List<SignedInput> inputList = Utils.buildSignedInputs();
         //
         // Build the new transaction
         //
         Transaction tx = null;
         while (true) {
-            //
-            // Build a list of signed inputs
-            //
             BigInteger totalAmount = sendAmount.add(sendFee);
-            List<SignedInput> inList = new ArrayList<>(txList.size());
-            for (ReceiveTransaction rcvTx : txList) {
-                Address outAddress = rcvTx.getAddress();
-                ECKey key = null;
-                for (ECKey chkKey : Parameters.keys) {
-                    if (Arrays.equals(chkKey.getPubKeyHash(), outAddress.getHash())) {
-                        key = chkKey;
-                        break;
-                    }
-                }
-                OutPoint outPoint = new OutPoint(rcvTx.getTxHash(), rcvTx.getTxIndex());
-                SignedInput input = new SignedInput(key, outPoint, rcvTx.getValue(), rcvTx.getScriptBytes());
-                inList.add(input);
-                totalAmount = totalAmount.subtract(rcvTx.getValue());
-                if (totalAmount.compareTo(BigInteger.ZERO) <= 0)
+            List<SignedInput> inputs = new ArrayList<>(inputList.size());
+            for (SignedInput input : inputList) {
+                inputs.add(input);
+                totalAmount = totalAmount.subtract(input.getValue());
+                if (totalAmount.signum() <= 0)
                     break;
             }
-            if (totalAmount.compareTo(BigInteger.ZERO) > 0) {
+            if (totalAmount.signum() > 0) {
                 JOptionPane.showMessageDialog(this, "There are not enough confirmed coins available",
                                               "Error", JOptionPane.ERROR_MESSAGE);
                 break;
             }
+            List<TransactionOutput> outputs = new ArrayList<>(2);
+            outputs.add(new TransactionOutput(0, sendAmount, sendAddress));
+            if (totalAmount.signum() != 0)
+                outputs.add(new TransactionOutput(1, totalAmount.negate(), Parameters.changeKey.toAddress()));
             //
-            // Create the new transaction using the signed inputs
+            // Create the new transaction using the supplied inputs and outputs
             //
-            tx = new Transaction(sendAddress, sendAmount, sendFee, inList, Parameters.changeKey.toAddress());
+            tx = new Transaction(inputs, outputs);
             //
             // The minimum fee increases for every 1000 bytes of serialized transaction data.  We
             // will need to increase the send fee if it doesn't cover the minimum fee.
             //
             int length = tx.getBytes().length;
             BigInteger minFee = BigInteger.valueOf(length/1000+1).multiply(Parameters.MIN_TX_FEE);
-            if (minFee.compareTo(sendFee) > 0) {
-              sendFee = minFee;
-              tx = null;
-              continue;
-            }
-            //
-            // We have a valid transaction - exit from the loop
-            //
-            break;
+            if (minFee.compareTo(sendFee) <= 0)
+                break;
+            sendFee = minFee;
+            tx = null;
         }
         //
         // Store the new transaction in the database and broadcast it to our peers
         //
         if (tx != null) {
-//            SendTransaction sendTx = new SendTransaction(tx.getNormalizedID(), tx.getHash(),
-//                            System.currentTimeMillis()/1000, Sha256Hash.ZERO_HASH, sendAddress,
-//                            sendAmount, sendFee, tx.getBytes());
             Parameters.databaseHandler.processTransaction(tx);
             List<Sha256Hash> invList = new ArrayList<>(2);
             invList.add(tx.getHash());
             Message invMsg = InventoryMessage.buildInventoryMessage(null, Parameters.INV_TX, invList);
             Parameters.networkHandler.broadcastMessage(invMsg);
-//            Main.mainWindow.txUpdated();
             JOptionPane.showMessageDialog(this, String.format("Transaction broadcast to peer nodes\n%s",
                                           tx.getHash()), "Transaction Broadcast", JOptionPane.INFORMATION_MESSAGE);
-        }
-    }
-
-    /**
-     * Receive transaction comparator
-     */
-    private class ReceiveTxComparator implements Comparator<ReceiveTransaction> {
-
-        /**
-         * Compares two receive transactions
-         *
-         * @param       rcv1        First transaction
-         * @param       rcv2        Second transaction
-         * @return                  -1 if less than, 0 if equal to, 1 if greater than
-         */
-        @Override
-        public int compare(ReceiveTransaction rcv1, ReceiveTransaction rcv2) {
-            return rcv1.getValue().compareTo(rcv2.getValue());
         }
     }
 }

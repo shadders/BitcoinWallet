@@ -1,5 +1,5 @@
 /**
- * Copyright 2013 Ronald W Hoffman
+ * Copyright 2013-2014 Ronald W Hoffman
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,6 @@ import javax.swing.*;
 import javax.swing.table.*;
 import java.awt.*;
 import java.awt.event.*;
-
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
 import java.awt.Toolkit;
@@ -227,7 +226,7 @@ public class SendAddressDialog extends JDialog implements ActionListener {
                 //
                 for (int i=0; i<Parameters.addresses.size(); i++) {
                     Address chkAddr = Parameters.addresses.get(i);
-                    if (chkAddr == address)
+                    if (chkAddr.equals(address))
                         continue;
                     if (chkAddr.getLabel().compareToIgnoreCase(label) == 0) {
                         JOptionPane.showMessageDialog(this, "Duplicate name specified", "Error",

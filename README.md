@@ -1,7 +1,9 @@
 BitcoinWallet
 =============
 
-BitcoinWallet is a Simple Payment Verification (SPV) Bitcoin wallet written in Java.  I wrote it mainly to get a better understanding of how the Bitcoin protocol works.  It allows you to send and receive coins using Pay-To-Pubkey-Hash payments.  It has a 'wallet' and a 'safe'.  The safe contains coins that are not to be spent until they are moved to the wallet.  It uses a single change address because I'm not worried about being anonymous on the network and don't want to take a chance on losing coins because I forgot to back up the wallet after making a transaction.  Bloom filters are used to reduce the amount of data sent to the wallet from the peer nodes.
+BitcoinWallet is a Simple Payment Verification (SPV) Bitcoin wallet written in Java.  It allows you to send and receive coins using Pay-To-Pubkey-Hash payments.  It has a 'wallet' and a 'safe'.  The safe contains coins that are not to be spent until they are moved to the wallet.  It uses a single change address because I'm not worried about being anonymous on the network and don't want to take a chance on losing coins because I forgot to back up the wallet after making a transaction.  Bloom filters are used to reduce the amount of data sent to the wallet from the peer nodes.
+
+Support is provided for the payment protocols defined in BIP0021 and BIP0070.  For a BIP0020 payment request, the transaction is created and broadcast by BitcoinWallet.  For a BIP0070 payment request, the transaction is created and returned to the merchant for broadcast.  A BIP0070 payment request that doesn't supply a payment URL will be rejected.  This ensures that the merchant receives the payment and no coins are lost if an error occurs during the payment processing.  BitcoinWallet must be registered to handle the bitcoin URI and must not be running when the payment request is made since the web browser will launch the application when it receives the payment request.
 
 You can use the production network (PROD) or the regression test network (TEST).  The regression test network is useful because bitcoind will immediately generate a specified number of blocks.  To use the regression test network, start bitcoind with the -regtest option.  You can then generate blocks using bitcoin-cli to issue 'setgenerate true n' where 'n' is the number of blocks to generate.  Block generation will stop after the requested number of blocks have been generated.  Note that the genesis block, address formats and magic numbers are different between the two networks.  BitcoinWallet will create files related to the TEST network in the TestNet subdirectory of the application data directory.
 
@@ -55,9 +57,9 @@ The following command-line options can be specified using -Dname=value
 
   - bitcoin.datadir=directory-path	
     Specifies the application data directory. Application data will be stored in a system-specific directory if this option is omitted:
-	    - Linux: user-home/.BitcoinWallet
-		- Mac: user-home/Library/Application Support/BitcoinWallet
-		- Windows: user-home/AppData/Roaming/BitcoinWallet
+	    - Linux: user-home/.BitcoinWallet	
+		- Mac: user-home/Library/Application Support/BitcoinWallet	
+		- Windows: user-home/AppData/Roaming/BitcoinWallet	
 	
   - java.util.logging.config.file=file-path		
     Specifies the logger configuration file. The logger properties will be read from 'logging.properties' in the application data directory. If this file is not found, the 'java.util.logging.config.file' system property will be used to locate the logger configuration file. If this property is not defined, the logger properties will be obtained from jre/lib/logging.properties.

@@ -67,6 +67,19 @@ public class TransactionOutput {
     }
 
     /**
+     * Creates a transaction output for the specified amount using the supplied script
+     *
+     * @param       txIndex                 Transaction output index
+     * @param       value                   Transaction output value
+     * @param       scriptBytes             Transaction output script
+     */
+    public TransactionOutput(int txIndex, BigInteger value, byte[] scriptBytes) {
+        this.txIndex = txIndex;
+        this.value = value;
+        this.scriptBytes = scriptBytes;
+    }
+
+    /**
      * Creates a transaction output from the encoded byte stream
      *
      * @param       txIndex                 Index within the transaction output list

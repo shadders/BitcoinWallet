@@ -1,6 +1,6 @@
 /**
  * Copyright 2011 Google Inc.
- * Copyright 2013 Ronald W Hoffman
+ * Copyright 2013-2014 Ronald W Hoffman
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,10 +20,19 @@ import org.bouncycastle.crypto.digests.RIPEMD160Digest;
 
 import java.io.IOException;
 import java.io.OutputStream;
+
 import java.math.BigInteger;
 import java.math.BigDecimal;
+
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -208,7 +217,6 @@ public class Utils {
             String s = Integer.toString(0xFF&b, 16);
             if (s.length() < 2)
                 buf.append('0');
-
             buf.append(s);
         }
         return buf.toString();
@@ -555,5 +563,62 @@ public class Utils {
             rDigest.doFinal(out, 0);
         }
         return out;
+    }
+
+    /**
+     * Build the signed input list for creating a new transaction.  The list will not
+     * include unconfirmed transactions, spent transactions or transactions in the safe.
+     *
+     * @return                          Signed input list
+     * @throws      WalletException     Unable to get list of unspent outputs
+     */
+    public static List<SignedInput> buildSignedInputs() throws WalletException {
+        List<SignedInput> inputList = new LinkedList<>();
+        //
+        // Get the list of available transaction outputs
+        //
+        List<ReceiveTransaction> txList = Parameters.wallet.getReceiveTxList();
+        Iterator<ReceiveTransaction> it = txList.iterator();
+        while (it.hasNext()) {
+            ReceiveTransaction tx = it.next();
+            if (tx.inSafe() || tx.isSpent()) {
+                it.remove();
+            } else {
+                int depth = Parameters.wallet.getTxDepth(tx.getTxHash());
+                if ((tx.isCoinBase() && depth < Parameters.COINBASE_MATURITY) ||
+                                    (!tx.isCoinBase() && depth < Parameters.TRANSACTION_CONFIRMED)) {
+                    it.remove();
+                }
+            }
+        }
+        //
+        // Sort the unspent outputs based on their value
+        //
+        Collections.sort(txList, new Comparator<ReceiveTransaction>() {
+            @Override
+            public int compare(ReceiveTransaction rcv1, ReceiveTransaction rcv2) {
+                return rcv1.getValue().compareTo(rcv2.getValue());
+            }
+        });
+        //
+        // Build the list of signed inputs
+        //
+        for (ReceiveTransaction rcvTx : txList) {
+            Address outAddress = rcvTx.getAddress();
+            ECKey key = null;
+            for (ECKey chkKey : Parameters.keys) {
+                if (Arrays.equals(chkKey.getPubKeyHash(), outAddress.getHash())) {
+                    key = chkKey;
+                    break;
+                }
+            }
+            if (key == null)
+                throw new WalletException(String.format("No key available for transaction output\n  %s : %d",
+                                                        rcvTx.getTxHash().toString(), rcvTx.getTxIndex()));
+            OutPoint outPoint = new OutPoint(rcvTx.getTxHash(), rcvTx.getTxIndex());
+            SignedInput input = new SignedInput(key, outPoint, rcvTx.getValue(), rcvTx.getScriptBytes());
+            inputList.add(input);
+        }
+        return inputList;
     }
 }
