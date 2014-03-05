@@ -19,13 +19,16 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+
 import java.net.ConnectException;
 import java.net.InetAddress;
 import java.net.Inet4Address;
 import java.net.StandardSocketOptions;
 import java.net.UnknownHostException;
+
 import java.nio.ByteBuffer;
 import java.nio.channels.*;
+
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -59,7 +62,6 @@ public class NetworkHandler implements Runnable {
     private static final String[] dnsSeeds = new String[] {
             "seed.bitcoin.sipa.be",         // Pieter Wuille
             "dnsseed.bluematt.me",          // Matt Corallo
-            "dnsseed.bitcoin.dashjr.org",   // Luke Dashjr
             "seed.bitcoinstats.com"         // bitcoinstats.com
     };
 
@@ -870,7 +872,7 @@ public class NetworkHandler implements Runnable {
                     }
                 }
             } catch (UnknownHostException exc) {
-                log.warn(String.format("DNS host %s not found", host), exc);
+                log.warn(String.format("DNS host %s not found", host));
             }
         }
     }

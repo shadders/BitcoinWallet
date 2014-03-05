@@ -527,7 +527,7 @@ public class Main {
             if (args[1].startsWith("bitcoin:"))
                 uriString = args[1];
             else
-                throw new IllegalArgumentException("Unrecognized command line parameters");
+                throw new IllegalArgumentException("Unrecognized command line parameter");
         }
     }
 
