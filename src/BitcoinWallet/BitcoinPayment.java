@@ -85,12 +85,6 @@ public class BitcoinPayment {
     /** Network */
     private String network = "main";
 
-    /** Payment request */
-    private Protos.PaymentRequest request;
-
-    /** Payment details */
-    private Protos.PaymentDetails details;
-
     /** Payment address */
     private Address address;
 
@@ -139,20 +133,27 @@ public class BitcoinPayment {
                 //
                 // For a BIP0070 payment request, we need to fetch the request from the merchant
                 //
+                Protos.PaymentRequest request;
+                Protos.PaymentDetails details;
                 log.info(String.format("Request URL: %s", requestURL.toString()));
                 HttpURLConnection conn = (HttpURLConnection)requestURL.openConnection();
+                conn.setRequestMethod("GET");
+                conn.setDoInput(true);
                 conn.setRequestProperty("Accept", "application/bitcoin-paymentrequest");
                 conn.setUseCaches(false);
                 try (InputStream inStream = conn.getInputStream()) {
                     request = Protos.PaymentRequest.parseFrom(inStream);
+                    int responseCode = conn.getResponseCode();
+                    if (responseCode != HttpURLConnection.HTTP_OK)
+                        throw new BitcoinPaymentException(
+                                String.format("Unable to get payment request: HTTP %d\n  %s",
+                                              responseCode, conn.getResponseMessage()));
                 }
                 if (!request.hasSerializedPaymentDetails())
                     throw new BitcoinPaymentException("No payment details included in payment request");
                 details = Protos.PaymentDetails.parseFrom(request.getSerializedPaymentDetails());
                 if (details.getOutputsCount() == 0)
                     throw new BitcoinPaymentException("No payment outputs in payment request");
-                if (!details.hasPaymentUrl())
-                    throw new BitcoinPaymentException("No payment URL included in payment request");
                 if (details.hasExpires()) {
                     if (details.getExpires() < System.currentTimeMillis()/1000)
                         throw new BitcoinPaymentException("Payment request has expired");
@@ -166,9 +167,11 @@ public class BitcoinPayment {
                     requestMemo = details.getMemo();
                 if (details.hasMerchantData())
                     merchantData = details.getMerchantData();
-                String urlString = details.getPaymentUrl();
-                log.info(String.format("Payment URL: %s", urlString));
-                paymentURL = new URL(urlString);
+                if (details.hasPaymentUrl()) {
+                    String urlString = details.getPaymentUrl();
+                    log.info(String.format("Payment URL: %s", urlString));
+                    paymentURL = new URL(urlString);
+                }
                 //
                 // Build the transaction output list
                 //
@@ -217,7 +220,7 @@ public class BitcoinPayment {
                                         Protos.X509Certificates.parseFrom(request.getPkiData());
                         if (certificates.getCertificateCount() == 0)
                             throw new BitcoinPaymentException("No X.509 certificates provided");
-                        verifyCertificates(algorithm, certificates);
+                        verifyCertificates(algorithm, certificates, request);
                     }
                 }
             } catch (InvalidProtocolBufferException exc) {
@@ -227,8 +230,9 @@ public class BitcoinPayment {
                 log.error("Malformed payment URL", exc);
                 throw new BitcoinPaymentException("Malformed payment URL in payment request");
             } catch (IOException exc) {
-                log.error("Unable to retrieve payment request", exc);
-                throw new BitcoinPaymentException("Unable to retrieve payment request");
+                log.error("Unable to get payment request", exc);
+                throw new BitcoinPaymentException(String.format("Unable to get payment request:\n  %s",
+                                                  exc.getMessage()));
             }
         }
     }
@@ -288,17 +292,16 @@ public class BitcoinPayment {
             }
             //
             // BIP0021 request: Store the new transaction in the database and broadcast it to our peers
-            // BIP0070 request: Send the payment to the merchant and let him broadcast it
+            // BIP0070 request: Send the payment to the merchant and get the acknowledgement before
+            //                  broadcasting the transaction
             //
-            if (outputList != null) {
+            if (paymentURL != null)
                 sendPayment(tx);
-            } else {
-                Parameters.databaseHandler.processTransaction(tx);
-                List<Sha256Hash> invList = new ArrayList<>(2);
-                invList.add(tx.getHash());
-                Message invMsg = InventoryMessage.buildInventoryMessage(null, Parameters.INV_TX, invList);
-                Parameters.networkHandler.broadcastMessage(invMsg);
-            }
+            Parameters.databaseHandler.processTransaction(tx);
+            List<Sha256Hash> invList = new ArrayList<>(2);
+            invList.add(tx.getHash());
+            Message invMsg = InventoryMessage.buildInventoryMessage(null, Parameters.INV_TX, invList);
+            Parameters.networkHandler.broadcastMessage(invMsg);
             //
             // Create a send address for the merchant
             //
@@ -316,7 +319,7 @@ public class BitcoinPayment {
                         for (int i=0; i<Parameters.addresses.size(); i++) {
                             Address chkAddr = Parameters.addresses.get(i);
                             if (chkAddr.getLabel().compareToIgnoreCase(label) == 0) {
-                                label = label.substring(0, length)+String.format(" (%d)", ++dupCount);
+                                label = label.substring(0, length)+String.format("(%d)", ++dupCount);
                                 valid = false;
                                 break;
                             }
@@ -386,15 +389,27 @@ public class BitcoinPayment {
             try (DataOutputStream outStream = new DataOutputStream(conn.getOutputStream())) {
                 payment.writeTo(outStream);
                 outStream.flush();
+                int responseCode = conn.getResponseCode();
+                if (responseCode != HttpURLConnection.HTTP_OK)
+                    throw new BitcoinPaymentException(
+                            String.format("Unable to send payment to merchant: HTTP %d\n  %s",
+                                          responseCode, conn.getResponseMessage()));
             }
             try (InputStream inStream = conn.getInputStream()) {
                 Protos.PaymentACK paymentACK = Protos.PaymentACK.parseFrom(inStream);
+                int responseCode = conn.getResponseCode();
+                if (responseCode != HttpURLConnection.HTTP_OK)
+                    throw new BitcoinPaymentException(
+                            String.format("Unable to read acknowledgement from merchant: HTTP %d\n  %s",
+                                          responseCode, conn.getResponseMessage()));
                 if (paymentACK.hasMemo())
                     ackMemo = paymentACK.getMemo();
             }
         } catch (IOException exc) {
-            log.error("Unable to send payment", exc);
-            throw new BitcoinPaymentException("Unable to send payment");
+            log.error("Unable to send payment and get acknowledgement", exc);
+            throw new BitcoinPaymentException(
+                                String.format("Unable to send payment and get acknowledgement\n  %s",
+                                exc.getMessage()));
         }
     }
 
@@ -403,10 +418,11 @@ public class BitcoinPayment {
      *
      * @param       algorithm                   PKI algorithm
      * @param       certificates                X.509 certificates
+     * @param       request                     Payment request
      * @throws      BitcoinPaymentException     Invalid certificate
      */
-    private void verifyCertificates(String algorithm, Protos.X509Certificates certificates)
-                                                throws BitcoinPaymentException {
+    private void verifyCertificates(String algorithm, Protos.X509Certificates certificates,
+                                    Protos.PaymentRequest request) throws BitcoinPaymentException {
         try {
             //
             // Get the certificate chain.  The CertificateFactory supports DER and Base64
