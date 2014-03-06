@@ -16,6 +16,7 @@
 package BitcoinWallet;
 
 import java.math.BigInteger;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -264,8 +265,9 @@ public class SendDialog extends JDialog implements ActionListener {
             }
             List<TransactionOutput> outputs = new ArrayList<>(2);
             outputs.add(new TransactionOutput(0, sendAmount, sendAddress));
-            if (totalAmount.signum() != 0)
-                outputs.add(new TransactionOutput(1, totalAmount.negate(), Parameters.changeKey.toAddress()));
+            BigInteger change = totalAmount.negate();
+            if (change.compareTo(Parameters.DUST_TRANSACTION) > 0)
+                outputs.add(new TransactionOutput(1, change, Parameters.changeKey.toAddress()));
             //
             // Create the new transaction using the supplied inputs and outputs
             //

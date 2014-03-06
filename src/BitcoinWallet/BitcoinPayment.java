@@ -273,9 +273,9 @@ public class BitcoinPayment {
                     outputs = new ArrayList<>(2);
                     outputs.add(new TransactionOutput(0, amount, address));
                 }
-                if (totalAmount.signum() != 0)
-                    outputs.add(new TransactionOutput(outputs.size(), totalAmount.negate(),
-                                                      Parameters.changeKey.toAddress()));
+                BigInteger change = totalAmount.negate();
+                if (change.compareTo(Parameters.DUST_TRANSACTION) > 0)
+                    outputs.add(new TransactionOutput(outputs.size(), change, Parameters.changeKey.toAddress()));
                 //
                 // Create the new transaction using the supplied inputs and outputs
                 //
