@@ -1,5 +1,5 @@
 /**
- * Copyright 2013 Ronald W Hoffman
+ * Copyright 2013-2014 Ronald W Hoffman
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import org.slf4j.LoggerFactory;
 import java.io.ByteArrayInputStream;
 import java.io.EOFException;
 import java.io.IOException;
+
 import java.nio.ByteBuffer;
 
 /**
@@ -90,7 +91,7 @@ public class VersionMessage {
         msgData[45] = (byte)dstPort;
         System.arraycopy(AddressMessage.IPV6_PREFIX, 0, msgData, 54, 12);
         Utils.uint64ToByteArrayLE(NODE_ID, msgData, 72);
-        msgData[80] = (byte)Parameters.SOFTWARE_NAME.length();
+        msgData[80] = (byte)agentName.length();
         for (int i=0; i<agentName.length(); i++)
             msgData[81+i] = (byte)agentName.codePointAt(i);
         int offset = agentName.length()+80+1;

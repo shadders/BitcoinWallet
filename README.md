@@ -15,7 +15,7 @@ Simple Logging Facade (1.7.5 or later) is used for console and file logging.  I'
 
 Google Protocol Buffers are used for the BIP0070 payment protocol support.  You can learn more about protocol buffers at https://developers.google.com/protocol-buffers/.
 
-A compiled version of BitcoinWallet is available here: https://drive.google.com/folderview?id=0B1312_6UqRHPYjUtbU1hdW9VMW8&usp=sharing.  Download BitcoinWallet-1.2.zip and extract the files to a directory of your choice.  If you are building from the source, the dependent jar files can also be obtained here.
+A compiled version of BitcoinWallet is available here: https://drive.google.com/folderview?id=0B1312_6UqRHPYjUtbU1hdW9VMW8&usp=sharing.  Download the desired archive file and extract the files to a directory of your choice.  If you are building from the source, the dependent jar files can also be obtained here.
 
 
 Build

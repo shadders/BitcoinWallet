@@ -576,7 +576,7 @@ public final class MainWindow extends JFrame implements ActionListener, Connecti
      */
     private void aboutMyWallet() {
         StringBuilder info = new StringBuilder(256);
-        info.append("<html>BitcoinWallet Version 1.2<br>");
+        info.append("<html>BitcoinWallet Version 1.3<br>");
         info.append("Copyright 2013-2014 Ronald W Hoffman. All rights reserved.<br>");
 
         info.append("<br>User name: ");

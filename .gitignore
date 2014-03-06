@@ -11,4 +11,6 @@ lib/
 *.zip
 *.war
 *.ear
+*.tar
+*.gz
 
