@@ -68,8 +68,9 @@ The following command-line options can be specified using -Dname=value
 	JDK SEVERE corresponds to the SLF4J ERROR level		
 
 The following configuration options can be specified in BitcoinWallet.conf.  This file is optional and must be in the application directory in order to be used.	
-	- connect=[address]:port		
-	  Specifies the address and port of a peer node.  This statement can be repeated to define multiple nodes.  If this option is specified, connections will be created to only the listed addresses and DNS discovery will not be used.
+
+  - connect=[address]:port		
+	Specifies the address and port of a peer node.  This statement can be repeated to define multiple nodes.  If this option is specified, connections will be created to only the listed addresses and DNS discovery will not be used.
 		
 Sample Windows shortcut:	
 
